@@ -6,14 +6,14 @@
 <title>上海行程 2026.11.19-24</title>
 <style>
   :root{
-    --bg:#0f1420;
-    --card:#1a2233;
-    --card2:#212b40;
-    --accent:#e8b04b;
-    --accent2:#ff6b5e;
-    --text:#f2f4f8;
-    --text-dim:#9aa5b8;
-    --border:#2b3650;
+    --bg:#eaf2fb;
+    --card:#ffffff;
+    --card2:#f0f6fd;
+    --accent:#3b82c4;
+    --accent2:#5aa8e0;
+    --text:#1c2b3a;
+    --text-dim:#6b7f92;
+    --border:#dbe7f3;
   }
   *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
   body{
@@ -25,7 +25,7 @@
   }
   header{
     padding:28px 20px 20px;
-    background:linear-gradient(160deg,#182238 0%, #0f1420 60%);
+    background:linear-gradient(160deg,#dceafb 0%, #eaf2fb 60%);
     position:relative;
     overflow:hidden;
     border-bottom:1px solid var(--border);
@@ -34,9 +34,9 @@
     content:"";
     position:absolute; right:-30px; top:-30px;
     width:160px;height:160px;border-radius:50%;
-    background:radial-gradient(circle,rgba(232,176,75,0.25),transparent 70%);
+    background:radial-gradient(circle,rgba(59,130,196,0.18),transparent 70%);
   }
-  header h1{margin:0 0 4px;font-size:22px;letter-spacing:.5px;}
+  header h1{margin:0 0 4px;font-size:22px;letter-spacing:.5px;color:var(--text);}
   header p{margin:0;color:var(--text-dim);font-size:13px;}
   .skyline{
     display:flex;align-items:flex-end;gap:3px;margin-top:14px;height:36px;opacity:.9;
@@ -52,7 +52,7 @@
     flex:0 0 auto;padding:8px 14px;border-radius:20px;border:1px solid var(--border);
     background:var(--card);color:var(--text-dim);font-size:13px;font-weight:600;white-space:nowrap;
   }
-  .daytabs button.active{background:var(--accent);color:#1a1204;border-color:var(--accent);}
+  .daytabs button.active{background:var(--accent);color:#ffffff;border-color:var(--accent);}
 
   .day-title{font-size:17px;font-weight:700;margin:0 0 12px;color:var(--accent);}
 
@@ -67,7 +67,7 @@
   .tag{font-size:11px;color:var(--text-dim);background:var(--card2);padding:3px 8px;border-radius:8px;}
   .maplink{
     margin-left:auto;display:inline-flex;align-items:center;gap:4px;
-    background:var(--accent);color:#1a1204;font-weight:700;font-size:12px;
+    background:var(--accent);color:#ffffff;font-weight:700;font-size:12px;
     padding:7px 12px;border-radius:10px;text-decoration:none;
   }
 
@@ -93,9 +93,10 @@
 
   nav{
     position:fixed;bottom:0;left:0;right:0;
-    display:flex;background:#0c1018;border-top:1px solid var(--border);
+    display:flex;background:#ffffff;border-top:1px solid var(--border);
     padding:6px 4px calc(6px + env(safe-area-inset-bottom));
     z-index:10;
+    box-shadow:0 -2px 12px rgba(59,130,196,0.08);
   }
   nav button{
     flex:1;background:none;border:none;color:var(--text-dim);
