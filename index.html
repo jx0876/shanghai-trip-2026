@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>上海行程 2026.11.19-24</title>
+<style>
+  :root{
+    --bg:#0f1420;
+    --card:#1a2233;
+    --card2:#212b40;
+    --accent:#e8b04b;
+    --accent2:#ff6b5e;
+    --text:#f2f4f8;
+    --text-dim:#9aa5b8;
+    --border:#2b3650;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  body{
+    margin:0;
+    font-family:-apple-system,BlinkMacSystemFont,"PingFang TC","Helvetica Neue",Arial,sans-serif;
+    background:var(--bg);
+    color:var(--text);
+    padding-bottom:76px;
+  }
+  header{
+    padding:28px 20px 20px;
+    background:linear-gradient(160deg,#182238 0%, #0f1420 60%);
+    position:relative;
+    overflow:hidden;
+    border-bottom:1px solid var(--border);
+  }
+  header::after{
+    content:"";
+    position:absolute; right:-30px; top:-30px;
+    width:160px;height:160px;border-radius:50%;
+    background:radial-gradient(circle,rgba(232,176,75,0.25),transparent 70%);
+  }
+  header h1{margin:0 0 4px;font-size:22px;letter-spacing:.5px;}
+  header p{margin:0;color:var(--text-dim);font-size:13px;}
+  .skyline{
+    display:flex;align-items:flex-end;gap:3px;margin-top:14px;height:36px;opacity:.9;
+  }
+  .skyline div{flex:1;background:linear-gradient(180deg,var(--accent),var(--accent2));border-radius:2px 2px 0 0;}
+
+  main{padding:16px 16px 8px;max-width:520px;margin:0 auto;}
+  .page{display:none;}
+  .page.active{display:block;}
+
+  .daytabs{display:flex;gap:8px;overflow-x:auto;padding-bottom:10px;margin-bottom:14px;}
+  .daytabs button{
+    flex:0 0 auto;padding:8px 14px;border-radius:20px;border:1px solid var(--border);
+    background:var(--card);color:var(--text-dim);font-size:13px;font-weight:600;white-space:nowrap;
+  }
+  .daytabs button.active{background:var(--accent);color:#1a1204;border-color:var(--accent);}
+
+  .day-title{font-size:17px;font-weight:700;margin:0 0 12px;color:var(--accent);}
+
+  .item{
+    background:var(--card);border:1px solid var(--border);border-radius:14px;
+    padding:14px 14px;margin-bottom:10px;
+  }
+  .item .time{font-size:11px;color:var(--accent);font-weight:700;letter-spacing:1px;text-transform:uppercase;}
+  .item .name{font-size:16px;font-weight:700;margin:4px 0 4px;}
+  .item .note{font-size:13px;color:var(--text-dim);line-height:1.5;margin-bottom:10px;}
+  .item .row{display:flex;gap:8px;flex-wrap:wrap;align-items:center;}
+  .tag{font-size:11px;color:var(--text-dim);background:var(--card2);padding:3px 8px;border-radius:8px;}
+  .maplink{
+    margin-left:auto;display:inline-flex;align-items:center;gap:4px;
+    background:var(--accent);color:#1a1204;font-weight:700;font-size:12px;
+    padding:7px 12px;border-radius:10px;text-decoration:none;
+  }
+
+  .info-card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:16px;margin-bottom:12px;}
+  .info-card h3{margin:0 0 8px;font-size:15px;color:var(--accent);}
+  .info-card p{margin:4px 0;font-size:13px;color:var(--text-dim);line-height:1.6;}
+  .info-card ul{margin:6px 0 0;padding-left:18px;font-size:13px;color:var(--text-dim);line-height:1.7;}
+  .info-card a{color:var(--accent2);}
+
+  table{width:100%;border-collapse:collapse;font-size:13px;margin-top:6px;}
+  th,td{border-bottom:1px solid var(--border);padding:8px 4px;text-align:left;color:var(--text-dim);}
+  th{color:var(--text);}
+  tfoot td{color:var(--accent);font-weight:700;}
+
+  .checklist label{
+    display:flex;align-items:center;gap:10px;padding:10px 4px;font-size:14px;
+    border-bottom:1px solid var(--border);
+  }
+  .checklist label:last-child{border-bottom:none;}
+  .checklist input{width:18px;height:18px;accent-color:var(--accent);}
+  .checklist input:checked + span{text-decoration:line-through;color:var(--text-dim);}
+  .section-label{font-size:12px;color:var(--accent);font-weight:700;letter-spacing:1px;margin:16px 0 6px;text-transform:uppercase;}
+
+  nav{
+    position:fixed;bottom:0;left:0;right:0;
+    display:flex;background:#0c1018;border-top:1px solid var(--border);
+    padding:6px 4px calc(6px + env(safe-area-inset-bottom));
+    z-index:10;
+  }
+  nav button{
+    flex:1;background:none;border:none;color:var(--text-dim);
+    display:flex;flex-direction:column;align-items:center;gap:3px;
+    font-size:10px;padding:6px 2px;
+  }
+  nav button .ic{font-size:19px;}
+  nav button.active{color:var(--accent);}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>上海行程 🧧</h1>
+  <p>2026.11.19（四）— 11.24（二）｜6天5夜｜4人</p>
+  <div class="skyline">
+    <div style="height:40%"></div><div style="height:70%"></div><div style="height:55%"></div>
+    <div style="height:90%"></div><div style="height:60%"></div><div style="height:75%"></div>
+    <div style="height:45%"></div><div style="height:85%"></div><div style="height:50%"></div>
+    <div style="height:65%"></div><div style="height:95%"></div><div style="height:40%"></div>
+  </div>
+</header>
+
+<main>
+
+  <!-- 每日行程 -->
+  <div class="page active" id="page-days">
+    <div class="daytabs" id="daytabs"></div>
+    <div id="daycontent"></div>
+  </div>
+
+  <!-- 交通 -->
+  <div class="page" id="page-transport">
+    <div class="info-card">
+      <h3>🚇 交通總覽</h3>
+      <p>全程以地鐵為主，飯店在靜安區長壽路（7號線/13號線），去外灘/南京路約20-30分鐘，去武康路/朱家角需轉乘。</p>
+      <ul>
+        <li>地鐵單趟約 RMB 3-9</li>
+        <li>建議用「Metro大都會」App 或支付寶掃碼過閘，不用另買交通卡</li>
+        <li>朱家角古鎮：地鐵+公車約1.5小時，屬近郊一日遊</li>
+        <li>機場↔市區：地鐵或機場巴士，約1小時，RMB 8-50</li>
+      </ul>
+    </div>
+    <div class="info-card">
+      <h3>📶 網路 / App</h3>
+      <ul>
+        <li>大陸鎖 Google/Line/FB/Instagram，<b>出發前先在台灣裝好 VPN 並測試</b>，落地後才裝會抓不到</li>
+        <li>備用地圖：高德地圖（Google Maps 在陸內可能不穩）</li>
+        <li>支付寶或微信支付先綁台灣信用卡，現金找零不便</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- 住宿 -->
+  <div class="page" id="page-hotel">
+    <div class="info-card">
+      <h3>🏨 米可飯店公寓（長壽路地鐵站店）</h3>
+      <p>上海市靜安區安遠路588號</p>
+      <p>最近地鐵：7號線/13號線 長壽路站，步行約8分鐘</p>
+      <p>入住 11/19 → 退房 11/24（5晚）</p>
+      <p>房型：開放式廚房，含洗衣機/冰箱/微波爐/陽台，部分房型榻榻米</p>
+      <p>不含早餐（行程已排街邊早餐）</p>
+      <p>評分 9.5／102間房，約台幣五六百/晚，入住需押金人民幣200</p>
+      <div class="row" style="margin-top:10px;">
+        <a class="maplink" href="https://www.trip.com/w/CZPxiZVQ2V2" target="_blank">開啟 Trip.com 訂房頁 →</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- 行李 -->
+  <div class="page" id="page-packing">
+    <div class="section-label">證件</div>
+    <div class="info-card checklist">
+      <label><input type="checkbox"><span>台胞證（有效期內，過期需提前換發）</span></label>
+      <label><input type="checkbox"><span>護照（效期6個月以上）</span></label>
+      <label><input type="checkbox"><span>機票電子確認函</span></label>
+    </div>
+    <div class="section-label">支付</div>
+    <div class="info-card checklist">
+      <label><input type="checkbox"><span>支付寶／微信支付綁台灣信用卡</span></label>
+      <label><input type="checkbox"><span>現金備用（人民幣約2000-3000元/人）</span></label>
+      <label><input type="checkbox"><span>信用卡（Visa/Master）</span></label>
+    </div>
+    <div class="section-label">網路</div>
+    <div class="info-card checklist">
+      <label><input type="checkbox"><span>SIM卡／eSIM（漫遊或當地卡）</span></label>
+      <label><input type="checkbox"><span>VPN（出發前裝好測試）</span></label>
+      <label><input type="checkbox"><span>高德地圖 App（備用）</span></label>
+    </div>
+    <div class="section-label">其他</div>
+    <div class="info-card checklist">
+      <label><input type="checkbox"><span>旅平險</span></label>
+      <label><input type="checkbox"><span>常備藥品</span></label>
+      <label><input type="checkbox"><span>外套/薄羽絨（11月均溫10-17°C）</span></label>
+      <label><input type="checkbox"><span>延長線分接（插座同台灣，通常免轉接）</span></label>
+    </div>
+  </div>
+
+  <!-- 預算 -->
+  <div class="page" id="page-budget">
+    <div class="info-card">
+      <h3>💰 每日預估花費（4人，人民幣，粗估）</h3>
+      <table>
+        <thead><tr><th>Day</th><th>餐飲</th><th>交通</th><th>門票/體驗</th><th>小計</th></tr></thead>
+        <tbody>
+          <tr><td>1</td><td>300</td><td>200</td><td>—</td><td>~500</td></tr>
+          <tr><td>2</td><td>600</td><td>100</td><td>渡輪 200-400</td><td>~1000-1100</td></tr>
+          <tr><td>3</td><td>500</td><td>150</td><td>古鎮門票/船票 300</td><td>~950</td></tr>
+          <tr><td>4</td><td>600</td><td>100</td><td>—</td><td>~700</td></tr>
+          <tr><td>5</td><td>600</td><td>100</td><td>LV遊輪 800-1500、星巴克200</td><td>~1700-2400</td></tr>
+          <tr><td>6</td><td>200</td><td>100</td><td>—</td><td>~300</td></tr>
+        </tbody>
+      </table>
+      <p style="margin-top:10px;">不含飯店（五六百台幣/晚 x5晚 + 押金RMB200）、機票（已訂）、購物彈性支出。</p>
+    </div>
+    <div class="info-card">
+      <h3>💱 匯率參考</h3>
+      <p>約 RMB 1 : TWD 4.4（出發前請自行查即時匯率）</p>
+    </div>
+  </div>
+
+</main>
+
+<nav>
+  <button class="active" data-page="page-days"><span class="ic">📅</span>每日行程</button>
+  <button data-page="page-transport"><span class="ic">🚇</span>交通</button>
+  <button data-page="page-hotel"><span class="ic">🏨</span>住宿</button>
+  <button data-page="page-packing"><span class="ic">🧳</span>行李</button>
+  <button data-page="page-budget"><span class="ic">💰</span>預算</button>
+</nav>
+
+<script>
+const mapUrl = q => "https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(q);
+
+const days = [
+  {
+    label: "Day1 11/19", title: "抵達上海",
+    items: [
+      {time:"下午", name:"台北→上海抵達，入住米可飯店公寓（長壽路）", note:"機場→長壽路：地鐵/機場巴士約1hr，RMB 8-50。落地先開VPN、換錢、辦支付寶", map:null},
+      {time:"晚上", name:"飯店附近覓食、休息", note:"長途飛行後不排硬行程", map:null},
+    ]
+  },
+  {
+    label: "Day2 11/20", title: "外灘・南京路",
+    items: [
+      {time:"早餐", name:"萊萊小籠包 / 小楊生煎", note:"皮薄餡多鮮肉小籠，或生煎+鴨血粉絲湯", map:"萊萊小籠包 上海"},
+      {time:"上午", name:"南京路步行街", note:"1.5公里商業街，可搭觀光小火車", map:"南京路步行街 上海"},
+      {time:"下午", name:"外灘・東方明珠塔・萬國建築群", note:"三件套，日落夜景最佳時段", map:"外灘 上海"},
+      {time:"傍晚", name:"黃浦江渡輪", note:"平價版夜景船遊", map:"黃浦江渡輪 上海"},
+      {time:"晚餐", name:"太二酸菜魚", note:"川味酸菜魚", map:"太二酸菜魚 上海"},
+    ]
+  },
+  {
+    label: "Day3 11/21", title: "朱家角古鎮一日遊",
+    items: [
+      {time:"早餐", name:"煎餅果子", note:"街邊經典早餐", map:"煎餅果子 上海"},
+      {time:"全天", name:"朱家角古鎮", note:"地鐵+公車約1.5hr。江南水鄉，放生橋、搖櫓船、扎肉、阿婆粽", map:"朱家角古鎮 上海"},
+      {time:"晚餐", name:"滬西老弄堂", note:"本幫菜，紅燒濃油赤醬，接地氣", map:"滬西老弄堂 上海"},
+    ]
+  },
+  {
+    label: "Day4 11/22", title: "武康路・梧桐區",
+    items: [
+      {time:"早餐", name:"小楊生煎", note:"底脆皮鬆，配咖喱牛肉湯", map:"小楊生煎 上海"},
+      {time:"上午", name:"武康大樓", note:"IG打卡熱點，1924年Art Deco建築", map:"武康大樓 上海"},
+      {time:"下午", name:"豫園", note:"明代園林+城隍廟商城，小吃集中", map:"豫園 上海"},
+      {time:"晚餐", name:"裕興記（蟹粉麵）", note:"蘇式麵，蟹粉/三蝦麵，價位偏高", map:"裕興記 上海"},
+    ]
+  },
+  {
+    label: "Day5 11/23", title: "南京路續逛・星巴克・收尾",
+    items: [
+      {time:"上午", name:"南京路步行街（沒逛完的部分）", note:"購物/補拍照", map:"南京路步行街 上海"},
+      {time:"下午", name:"LV遊輪", note:"較精緻版黃浦江遊船", map:"黃浦江游輪 上海"},
+      {time:"下午", name:"星巴克烘焙工坊", note:"全球最大星巴克門市", map:"星巴克臻選上海烘焙工坊"},
+      {time:"晚餐", name:"海底撈", note:"服務體驗知名，適合收尾聚餐", map:"海底撈 上海"},
+      {time:"晚上", name:"按摩", note:"隔天返程前放鬆", map:"按摩 上海"},
+    ]
+  },
+  {
+    label: "Day6 11/24", title: "返程",
+    items: [
+      {time:"上午", name:"飯店退房，簡單早餐", note:"", map:null},
+      {time:"中午前", name:"前往機場，上海→台北", note:"地鐵/機場巴士", map:null},
+    ]
+  },
+];
+
+const daytabs = document.getElementById('daytabs');
+const daycontent = document.getElementById('daycontent');
+
+function renderDay(idx){
+  [...daytabs.children].forEach((b,i)=>b.classList.toggle('active', i===idx));
+  const d = days[idx];
+  daycontent.innerHTML = `<div class="day-title">${d.label}｜${d.title}</div>` +
+    d.items.map(it => `
+      <div class="item">
+        <div class="time">${it.time}</div>
+        <div class="name">${it.name}</div>
+        ${it.note ? `<div class="note">${it.note}</div>` : ''}
+        <div class="row">
+          ${it.map ? `<a class="maplink" href="${mapUrl(it.map)}" target="_blank">📍 導航</a>` : ''}
+        </div>
+      </div>
+    `).join('');
+}
+
+days.forEach((d,i)=>{
+  const b = document.createElement('button');
+  b.textContent = d.label;
+  b.onclick = ()=>renderDay(i);
+  daytabs.appendChild(b);
+});
+renderDay(0);
+
+// bottom nav
+document.querySelectorAll('nav button').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    document.querySelectorAll('nav button').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+    document.getElementById(btn.dataset.page).classList.add('active');
+  });
+});
+</script>
+
+</body>
+</html>
