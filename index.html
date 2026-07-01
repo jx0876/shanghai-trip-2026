@@ -58,10 +58,12 @@
 
   .item{
     background:var(--card);border:1px solid var(--border);border-radius:14px;
-    padding:14px 14px;margin-bottom:10px;
+    padding:14px 14px;margin-bottom:10px;cursor:pointer;
   }
   .item .time{font-size:11px;color:var(--accent);font-weight:700;letter-spacing:1px;text-transform:uppercase;}
-  .item .name{font-size:16px;font-weight:700;margin:4px 0 4px;}
+  .item .name{font-size:16px;font-weight:700;margin:4px 0 4px;display:flex;align-items:center;gap:6px;}
+  .item .chevron{margin-left:auto;font-size:12px;color:var(--text-dim);transition:transform .2s;}
+  .item.expanded .chevron{transform:rotate(180deg);}
   .item .note{font-size:13px;color:var(--text-dim);line-height:1.5;margin-bottom:10px;}
   .item .row{display:flex;gap:8px;flex-wrap:wrap;align-items:center;}
   .tag{font-size:11px;color:var(--text-dim);background:var(--card2);padding:3px 8px;border-radius:8px;}
@@ -70,6 +72,12 @@
     background:var(--accent);color:#ffffff;font-weight:700;font-size:12px;
     padding:7px 12px;border-radius:10px;text-decoration:none;
   }
+  .detail{
+    display:none;margin-top:10px;padding-top:10px;border-top:1px dashed var(--border);
+    font-size:13px;color:var(--text);line-height:1.7;
+  }
+  .item.expanded .detail{display:block;}
+  .detail .dh{font-size:11px;font-weight:700;color:var(--accent);letter-spacing:1px;margin-bottom:4px;text-transform:uppercase;}
 
   .info-card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:16px;margin-bottom:12px;}
   .info-card h3{margin:0 0 8px;font-size:15px;color:var(--accent);}
@@ -235,52 +243,73 @@ const days = [
   {
     label: "Day1 11/19", title: "抵達上海",
     items: [
-      {time:"下午", name:"台北→上海抵達，入住米可飯店公寓（長壽路）", note:"機場→長壽路：地鐵/機場巴士約1hr，RMB 8-50。落地先開VPN、換錢、辦支付寶", map:null},
-      {time:"晚上", name:"飯店附近覓食、休息", note:"長途飛行後不排硬行程", map:null},
+      {time:"下午", name:"台北→上海抵達，入住米可飯店公寓（長壽路）", note:"機場→長壽路：地鐵/機場巴士約1hr，RMB 8-50。落地先開VPN、換錢、辦支付寶", map:null,
+        detail:"浦東機場出關後可搭地鐵2號線轉乘至長壽路，或直接打車較省事（行李多建議打車，約RMB150-200）。落地第一件事先確認手機能上網、VPN連得上，再處理支付寶/現金。"},
+      {time:"晚上", name:"飯店附近覓食、休息", note:"長途飛行後不排硬行程", map:null,
+        detail:"長壽路一帶生活機能不錯，超市、小吃店都有，第一晚不用特別安排遠程行程，先熟悉飯店周邊、調時差即可。"},
     ]
   },
   {
     label: "Day2 11/20", title: "外灘・南京路",
     items: [
-      {time:"早餐", name:"萊萊小籠包 / 小楊生煎", note:"皮薄餡多鮮肉小籠，或生煎+鴨血粉絲湯", map:"萊萊小籠包 上海"},
-      {time:"上午", name:"南京路步行街", note:"1.5公里商業街，可搭觀光小火車", map:"南京路步行街 上海"},
-      {time:"下午", name:"外灘・東方明珠塔・萬國建築群", note:"三件套，日落夜景最佳時段", map:"外灘 上海"},
-      {time:"傍晚", name:"黃浦江渡輪", note:"平價版夜景船遊", map:"黃浦江渡輪 上海"},
-      {time:"晚餐", name:"太二酸菜魚", note:"川味酸菜魚", map:"太二酸菜魚 上海"},
+      {time:"早餐", name:"萊萊小籠包 / 小楊生煎", note:"皮薄餡多鮮肉小籠，或生煎+鴨血粉絲湯", map:"萊萊小籠包 上海",
+        detail:"兩家都是上海早餐常客排隊名店，小籠皮薄湯多，生煎則是底部煎得金黃酥脆，內餡帶湯汁，建議一次點少量嚐鮮就好，留胃口給後面行程。"},
+      {time:"上午", name:"南京路步行街", note:"1.5公里商業街，可搭觀光小火車", map:"南京路步行街 上海",
+        detail:"東起外灘、西接人民廣場的徒步商業街，老字號百貨、藥妝、伴手禮店集中，人潮多，貴重物品注意隨身攜帶，觀光小火車可省腳力代步逛全程。"},
+      {time:"下午", name:"外灘・東方明珠塔・萬國建築群", note:"三件套，日落夜景最佳時段", map:"外灘 上海",
+        detail:"黃浦江西岸是各國風格老建築群，東岸陸家嘴則是東方明珠、金茂大廈等摩天樓景觀，白天/夜晚景色完全不同，建議抓日落前到，等華燈初上拍夜景最漂亮。"},
+      {time:"傍晚", name:"黃浦江渡輪", note:"平價版夜景船遊", map:"黃浦江渡輪 上海",
+        detail:"金陵東路渡口往浦東方向的公共輪渡，票價便宜（幾元人民幣），是本地人日常通勤船，順路體驗江上夜景，比觀光遊船平價很多。"},
+      {time:"晚餐", name:"太二酸菜魚", note:"川味酸菜魚", map:"太二酸菜魚 上海",
+        detail:"連鎖川菜品牌，主打酸菜魚，魚肉滑嫩、酸辣湯頭開胃，用餐尖峰時段常需候位，可提前用App排隊取號。"},
     ]
   },
   {
     label: "Day3 11/21", title: "朱家角古鎮一日遊",
     items: [
-      {time:"早餐", name:"煎餅果子", note:"街邊經典早餐", map:"煎餅果子 上海"},
-      {time:"全天", name:"朱家角古鎮", note:"地鐵+公車約1.5hr。江南水鄉，放生橋、搖櫓船、扎肉、阿婆粽", map:"朱家角古鎮 上海"},
-      {time:"晚餐", name:"滬西老弄堂", note:"本幫菜，紅燒濃油赤醬，接地氣", map:"滬西老弄堂 上海"},
+      {time:"早餐", name:"煎餅果子", note:"街邊經典早餐", map:"煎餅果子 上海",
+        detail:"北方傳入但上海街頭也常見的國民早餐，薄餅裹蛋、脆薄片、醬料，現做現吃，價格親民，適合出發前墊胃。"},
+      {time:"全天", name:"朱家角古鎮", note:"地鐵+公車約1.5hr。江南水鄉，放生橋、搖櫓船、扎肉、阿婆粽", map:"朱家角古鎮 上海",
+        detail:"上海近郊保存最完整的江南水鄉古鎮之一，明清石橋、河道、老街構成主體，地標放生橋是拍照熱點，搖櫓船遊河約半小時，逛街小吃以扎肉、阿婆粽、當地醃菜為主，建議留一整天悠閒逛。"},
+      {time:"晚餐", name:"滬西老弄堂", note:"本幫菜，紅燒濃油赤醬，接地氣", map:"滬西老弄堂 上海",
+        detail:"上海本幫菜走紅燒、濃油赤醬路線，弄堂風格裝潢懷舊，招牌菜通常是紅燒肉、油爆蝦一類重口味家常菜，適合多人共享合菜。"},
     ]
   },
   {
     label: "Day4 11/22", title: "武康路・梧桐區",
     items: [
-      {time:"早餐", name:"小楊生煎", note:"底脆皮鬆，配咖喱牛肉湯", map:"小楊生煎 上海"},
-      {time:"上午", name:"武康大樓", note:"IG打卡熱點，1924年Art Deco建築", map:"武康大樓 上海"},
-      {time:"下午", name:"豫園", note:"明代園林+城隍廟商城，小吃集中", map:"豫園 上海"},
-      {time:"晚餐", name:"裕興記（蟹粉麵）", note:"蘇式麵，蟹粉/三蝦麵，價位偏高", map:"裕興記 上海"},
+      {time:"早餐", name:"小楊生煎", note:"底脆皮鬆，配咖喱牛肉湯", map:"小楊生煎 上海",
+        detail:"上海生煎連鎖名店，底部煎得酥脆、上層鬆軟多汁，經典鮮肉口味之外也有蝦仁款，配咖喱牛肉湯或鴨血粉絲湯是在地標配吃法。"},
+      {time:"上午", name:"武康大樓", note:"IG打卡熱點，1924年Art Deco建築", map:"武康大樓 上海",
+        detail:"1924年落成的船型Art Deco公寓樓，位於五岔路口，是上海梧桐區代表建築、社群媒體打卡熱點。周邊武康路沿線有不少特色小店、老洋房，適合慢慢散步拍照，建議避開假日人潮尖峰。"},
+      {time:"下午", name:"豫園", note:"明代園林+城隍廟商城，小吃集中", map:"豫園 上海",
+        detail:"始建於明代的古典園林，亭台樓閣、假山池水保存完整，緊鄰豫園商城與城隍廟，老上海風情濃厚，周邊小吃攤密集（南翔小籠是招牌），過年期間有知名燈會。"},
+      {time:"晚餐", name:"裕興記（蟹粉麵）", note:"蘇式麵，蟹粉/三蝦麵，價位偏高", map:"裕興記 上海",
+        detail:"蘇州起家的蘇式麵名店，招牌是現拆蟹粉拌麵與三蝦麵，湯頭講究、用料實在，秋冬蟹粉當令最鮮，價位比一般麵館高但份量與品質對得起價錢。"},
     ]
   },
   {
     label: "Day5 11/23", title: "南京路續逛・星巴克・收尾",
     items: [
-      {time:"上午", name:"南京路步行街（沒逛完的部分）", note:"購物/補拍照", map:"南京路步行街 上海"},
-      {time:"下午", name:"LV遊輪", note:"較精緻版黃浦江遊船", map:"黃浦江游輪 上海"},
-      {time:"下午", name:"星巴克烘焙工坊", note:"全球最大星巴克門市", map:"星巴克臻選上海烘焙工坊"},
-      {time:"晚餐", name:"海底撈", note:"服務體驗知名，適合收尾聚餐", map:"海底撈 上海"},
-      {time:"晚上", name:"按摩", note:"隔天返程前放鬆", map:"按摩 上海"},
+      {time:"上午", name:"南京路步行街（沒逛完的部分）", note:"購物/補拍照", map:"南京路步行街 上海",
+        detail:"把Day2沒逛完的店家、伴手禮採買補齊，上午人潮相對少，適合安排血拼跟拍照。"},
+      {time:"下午", name:"LV遊輪", note:"較精緻版黃浦江遊船", map:"黃浦江游輪 上海",
+        detail:"相較於平價的公共渡輪，這類觀光遊船艙內裝潢較精緻、航程較長，會沿江繞經外灘與陸家嘴兩岸景觀，適合安排在傍晚時段看兩岸華燈初上。"},
+      {time:"下午", name:"星巴克烘焙工坊", note:"全球最大星巴克門市", map:"星巴克臻選上海烘焙工坊",
+        detail:"Starbucks Reserve Roastery上海店，是全球規模最大的星巴克門市，內部有現場烘焙展示、多種限定飲品與周邊商品，本身就是觀光景點，假日人潮較多。"},
+      {time:"晚餐", name:"海底撈", note:"服務體驗知名，適合收尾聚餐", map:"海底撈 上海",
+        detail:"連鎖火鍋品牌，以貼心服務聞名（等位時有美甲、按摩等小服務），適合多人聚餐收尾，用餐尖峰建議提前線上排隊取號。"},
+      {time:"晚上", name:"按摩", note:"隔天返程前放鬆", map:"按摩 上海",
+        detail:"行程收尾放鬆推薦，上海腳底/全身按摩、足浴店選擇多，連鎖品牌（如富僑、良子）與在地小店都有，逛街走累了很適合鬆一下小腿與肩頸。"},
     ]
   },
   {
     label: "Day6 11/24", title: "返程",
     items: [
-      {time:"上午", name:"飯店退房，簡單早餐", note:"", map:null},
-      {time:"中午前", name:"前往機場，上海→台北", note:"地鐵/機場巴士", map:null},
+      {time:"上午", name:"飯店退房，簡單早餐", note:"", map:null,
+        detail:"退房前確認押金退還狀況，行李打包預留隨身重要物品（證件、機票確認函）方便過安檢時拿取。"},
+      {time:"中午前", name:"前往機場，上海→台北", note:"地鐵/機場巴士", map:null,
+        detail:"預留至少2.5-3小時給機場流程（報到、安檢、登機），尖峰時段地鐵/機場巴士也可能較擁擠，建議提早出發。"},
     ]
   },
 ];
@@ -295,13 +324,19 @@ function renderDay(idx){
     d.items.map(it => `
       <div class="item">
         <div class="time">${it.time}</div>
-        <div class="name">${it.name}</div>
+        <div class="name">${it.name}${it.detail ? '<span class="chevron">▾</span>' : ''}</div>
         ${it.note ? `<div class="note">${it.note}</div>` : ''}
         <div class="row">
-          ${it.map ? `<a class="maplink" href="${mapUrl(it.map)}" target="_blank">📍 導航</a>` : ''}
+          ${it.map ? `<a class="maplink" href="${mapUrl(it.map)}" target="_blank" onclick="event.stopPropagation()">📍 導航</a>` : ''}
         </div>
+        ${it.detail ? `<div class="detail"><div class="dh">詳細資訊</div>${it.detail}</div>` : ''}
       </div>
     `).join('');
+  daycontent.querySelectorAll('.item').forEach(el=>{
+    if(el.querySelector('.chevron')){
+      el.addEventListener('click', ()=> el.classList.toggle('expanded'));
+    }
+  });
 }
 
 days.forEach((d,i)=>{
