@@ -189,6 +189,22 @@
   .checklist input:checked + span{text-decoration:line-through;color:var(--text-dim);}
   .section-label{font-size:12px;color:var(--accent);font-weight:700;letter-spacing:1px;margin:16px 0 6px;text-transform:uppercase;}
 
+  .pack-sec-head{display:flex;align-items:center;gap:8px;}
+  .pack-sec-head .stitle{flex:1;outline:none;border-radius:6px;padding:2px 4px;}
+  .pack-sec-head .stitle:focus{background:var(--card2);}
+  .pack-sec-head .sdel{background:none;border:0;color:var(--text-dim);font-size:13px;cursor:pointer;padding:2px 6px;flex:0 0 auto;text-transform:none;}
+  .pack-item{display:flex;align-items:center;gap:10px;padding:10px 4px;font-size:14px;border-bottom:1px solid var(--border);}
+  .pack-item:last-of-type{border-bottom:none;}
+  .pack-item input[type=checkbox]{width:18px;height:18px;accent-color:var(--accent);flex:0 0 auto;}
+  .pack-item .ptext{flex:1;outline:none;border-radius:6px;padding:2px 4px;min-width:0;word-break:break-word;}
+  .pack-item .ptext:focus{background:var(--card2);}
+  .pack-item.done .ptext{text-decoration:line-through;color:var(--text-dim);}
+  .pack-item .pdel{background:none;border:0;color:var(--text-dim);font-size:14px;cursor:pointer;padding:2px 6px;flex:0 0 auto;}
+  .pack-add{display:flex;gap:8px;margin-top:10px;}
+  .pack-add input{flex:1;min-width:0;padding:8px 10px;border:1px solid var(--border);border-radius:8px;background:var(--bg);color:var(--text);font-size:14px;}
+  .pack-add button{flex:0 0 auto;padding:8px 12px;border:0;border-radius:8px;background:var(--accent);color:#fff;font-size:14px;font-weight:600;cursor:pointer;white-space:nowrap;}
+  .pack-newsec{margin-top:14px;}
+
   nav{
     position:fixed;bottom:0;left:0;right:0;
     display:flex;background:var(--card);border-top:1px solid var(--border);
@@ -393,31 +409,8 @@
         <li>室內有暖氣，外套要方便穿脫</li>
       </ul>
     </div>
-    <div class="section-label">證件</div>
-    <div class="info-card checklist">
-      <label><input type="checkbox"><span>台胞證（有效期內，過期需提前換發）</span></label>
-      <label><input type="checkbox"><span>護照（效期6個月以上）</span></label>
-      <label><input type="checkbox"><span>機票電子確認函</span></label>
-    </div>
-    <div class="section-label">支付</div>
-    <div class="info-card checklist">
-      <label><input type="checkbox"><span>支付寶／微信支付綁台灣信用卡</span></label>
-      <label><input type="checkbox"><span>現金備用（人民幣約2000-3000元/人）</span></label>
-      <label><input type="checkbox"><span>信用卡（Visa/Master）</span></label>
-    </div>
-    <div class="section-label">網路</div>
-    <div class="info-card checklist">
-      <label><input type="checkbox"><span>SIM卡／eSIM（漫遊或當地卡）</span></label>
-      <label><input type="checkbox"><span>VPN（出發前裝好測試）</span></label>
-      <label><input type="checkbox"><span>高德地圖 App（備用）</span></label>
-    </div>
-    <div class="section-label">其他</div>
-    <div class="info-card checklist">
-      <label><input type="checkbox"><span>旅平險</span></label>
-      <label><input type="checkbox"><span>常備藥品</span></label>
-      <label><input type="checkbox"><span>外套/薄羽絨（11月均溫10-17°C）</span></label>
-      <label><input type="checkbox"><span>延長線分接（插座同台灣，通常免轉接）</span></label>
-    </div>
+    <p class="fx-note" style="margin:14px 0 0;">點文字可直接編輯、打勾記錄已收好、🗑 刪除、下方可新增項目或分類（存這支手機）。</p>
+    <div id="packList"></div>
   </div>
 
   <!-- 預算 -->
@@ -1110,6 +1103,95 @@ expAdd.addEventListener('click', ()=>{
 
 resetForm();
 renderExpenses();
+
+// ---- 行李清單（可新增/編輯/刪除/打勾，存本機） ----
+const packList = document.getElementById('packList');
+const PACK_DEFAULT = [
+  { title:'證件', items:['台胞證（有效期內，過期需提前換發）','護照（效期6個月以上）','機票電子確認函'] },
+  { title:'支付', items:['支付寶／微信支付綁台灣信用卡','現金備用（人民幣約2000-3000元/人）','信用卡（Visa/Master）'] },
+  { title:'網路', items:['SIM卡／eSIM（漫遊或當地卡）','VPN（出發前裝好測試）','高德地圖 App（備用）'] },
+  { title:'其他', items:['旅平險','常備藥品','外套/薄羽絨（11月均溫10-17°C）','延長線分接（插座同台灣，通常免轉接）'] },
+];
+const packUid = p => p + Math.random().toString(36).slice(2);
+const packEsc = s => String(s).replace(/[&<>"]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+if(!Array.isArray(store.packing)){
+  store.packing = PACK_DEFAULT.map(s=>({ id:packUid('s'), title:s.title,
+    items:s.items.map(t=>({ id:packUid('i'), text:t, done:false })) }));
+  save();
+}
+const findSec = sid => store.packing.find(s=> s.id===sid);
+
+function renderPacking(){
+  if(!packList) return;
+  packList.innerHTML = store.packing.map(sec=>`
+    <div class="section-label pack-sec-head" data-sid="${sec.id}">
+      <span class="stitle" contenteditable="true" spellcheck="false">${packEsc(sec.title)}</span>
+      <button class="sdel" data-act="secdel" aria-label="刪除分類">✕</button>
+    </div>
+    <div class="info-card">
+      ${sec.items.map(it=>`
+        <div class="pack-item${it.done?' done':''}" data-sid="${sec.id}" data-iid="${it.id}">
+          <input type="checkbox" ${it.done?'checked':''}>
+          <span class="ptext" contenteditable="true" spellcheck="false">${packEsc(it.text)}</span>
+          <button class="pdel" data-act="itemdel" aria-label="刪除">🗑</button>
+        </div>`).join('')}
+      <div class="pack-add">
+        <input type="text" placeholder="新增項目…" data-sid="${sec.id}">
+        <button data-act="itemadd" data-sid="${sec.id}">＋</button>
+      </div>
+    </div>`).join('') +
+    `<div class="pack-add pack-newsec">
+       <input type="text" id="newSecInput" placeholder="新增分類（如：藥品、3C、行李箱…）">
+       <button data-act="secadd">＋ 分類</button>
+     </div>`;
+  bindPacking();
+}
+
+function bindPacking(){
+  packList.querySelectorAll('.pack-item').forEach(row=>{
+    const sec = findSec(row.dataset.sid); if(!sec) return;
+    const it = sec.items.find(x=> x.id===row.dataset.iid); if(!it) return;
+    row.querySelector('input[type=checkbox]').addEventListener('change', e=>{
+      it.done = e.target.checked; row.classList.toggle('done', it.done); save();
+    });
+    const span = row.querySelector('.ptext');
+    span.addEventListener('keydown', e=>{ if(e.key==='Enter'){ e.preventDefault(); span.blur(); } });
+    span.addEventListener('blur', ()=>{
+      const t = span.textContent.trim();
+      if(!t){ sec.items = sec.items.filter(x=> x.id!==it.id); save(); renderPacking(); return; }
+      it.text = t; save();
+    });
+    row.querySelector('[data-act="itemdel"]').addEventListener('click', ()=>{
+      sec.items = sec.items.filter(x=> x.id!==it.id); save(); renderPacking();
+    });
+  });
+  packList.querySelectorAll('.pack-sec-head').forEach(head=>{
+    const sec = findSec(head.dataset.sid); if(!sec) return;
+    const st = head.querySelector('.stitle');
+    st.addEventListener('keydown', e=>{ if(e.key==='Enter'){ e.preventDefault(); st.blur(); } });
+    st.addEventListener('blur', ()=>{ const t = st.textContent.trim(); if(!t){ renderPacking(); return; } sec.title = t; save(); });
+    head.querySelector('[data-act="secdel"]').addEventListener('click', ()=>{
+      if(!confirm('刪除整個「'+sec.title+'」分類？')) return;
+      store.packing = store.packing.filter(s=> s.id!==sec.id); save(); renderPacking();
+    });
+  });
+  packList.querySelectorAll('[data-act="itemadd"]').forEach(btn=>{
+    const inp = btn.previousElementSibling;
+    const add = ()=>{ const t = inp.value.trim(); if(!t) return; const sec = findSec(btn.dataset.sid); if(!sec) return;
+      sec.items.push({ id:packUid('i'), text:t, done:false }); save(); renderPacking(); };
+    btn.addEventListener('click', add);
+    inp.addEventListener('keydown', e=>{ if(e.key==='Enter'){ e.preventDefault(); add(); } });
+  });
+  const secAddBtn = packList.querySelector('[data-act="secadd"]');
+  if(secAddBtn){
+    const inp = document.getElementById('newSecInput');
+    const add = ()=>{ const t = inp.value.trim(); if(!t) return;
+      store.packing.push({ id:packUid('s'), title:t, items:[] }); save(); renderPacking(); };
+    secAddBtn.addEventListener('click', add);
+    inp.addEventListener('keydown', e=>{ if(e.key==='Enter'){ e.preventDefault(); add(); } });
+  }
+}
+renderPacking();
 
 window.addEventListener('online', updateOfflineStatus);
 window.addEventListener('offline', updateOfflineStatus);
