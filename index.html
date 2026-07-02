@@ -54,7 +54,7 @@
     font-family:"Noto Sans TC",-apple-system,BlinkMacSystemFont,"PingFang TC","Helvetica Neue",Arial,sans-serif;
     background:var(--bg);
     color:var(--text);
-    padding-bottom:76px;
+    padding-bottom:calc(96px + env(safe-area-inset-bottom));
     transition:background .25s,color .25s;
   }
   header{
@@ -107,7 +107,18 @@
     background:var(--card);border:1px solid var(--border);border-radius:14px;
     padding:14px 14px;margin-bottom:10px;cursor:pointer;
   }
-  .item .time{font-size:11px;color:var(--accent);font-weight:700;letter-spacing:1px;text-transform:uppercase;}
+  .item .time{font-size:12px;color:var(--accent);font-weight:700;letter-spacing:.5px;}
+  .item .time .clk{font-size:15px;margin-right:4px;}
+  .chips{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 8px;}
+  .chip{
+    font-size:11px;color:var(--text-dim);background:var(--card2);
+    padding:4px 9px;border-radius:8px;line-height:1.3;
+  }
+  .transit{
+    display:flex;align-items:center;gap:6px;margin:0 0 8px;
+    font-size:12px;color:var(--accent2);font-weight:700;
+    background:var(--card2);padding:6px 10px;border-radius:8px;
+  }
   .item .name{font-family:var(--font-serif);font-size:16px;font-weight:700;margin:4px 0 4px;display:flex;align-items:center;gap:8px;}
   .item .name .txt{flex:1;}
   .item .chevron{font-size:12px;color:var(--text-dim);transition:transform .2s;}
@@ -184,16 +195,16 @@
   nav{
     position:fixed;bottom:0;left:0;right:0;
     display:flex;background:var(--card);border-top:1px solid var(--border);
-    padding:6px 2px calc(6px + env(safe-area-inset-bottom));
+    padding:12px 2px calc(20px + env(safe-area-inset-bottom));
     z-index:10;
     box-shadow:0 -2px 12px rgba(59,130,196,0.08);
   }
   nav button{
     flex:1;background:none;border:none;color:var(--text-dim);
-    display:flex;flex-direction:column;align-items:center;gap:3px;
+    display:flex;flex-direction:column;align-items:center;gap:4px;
     font-size:10px;padding:6px 1px;
   }
-  nav button .ic{font-size:19px;}
+  nav button .ic{font-size:21px;}
   nav button.active{color:var(--accent);}
 
   /* 匯率換算機 */
@@ -266,7 +277,6 @@
 
   <!-- 每日行程 -->
   <div class="page active" id="page-days">
-    <a class="bigmap" href="https://www.google.com/maps/search/?api=1&query=%E4%B8%8A%E6%B5%B7%E6%99%AF%E9%BB%9E" target="_blank">🗺️ 開地圖看全部景點</a>
     <div class="daytabs" id="daytabs"></div>
     <div id="daycontent"></div>
   </div>
@@ -434,7 +444,6 @@
       <div class="alt"><div class="info"><b>1933 老場坊</b><span>老屠宰場改文創，建築迷宮好拍</span></div><a href="https://www.google.com/maps/search/?api=1&query=%E4%B8%8A%E6%B5%B7%201933%E8%80%81%E5%A0%B4%E5%9D%8A" target="_blank">📍</a></div>
       <div class="alt"><div class="info"><b>多倫路文化名人街</b><span>老上海街景，安靜好走</span></div><a href="https://www.google.com/maps/search/?api=1&query=%E4%B8%8A%E6%B5%B7%20%E5%A4%9A%E5%80%AB%E8%B7%AF" target="_blank">📍</a></div>
     </div>
-    <a class="bigmap" href="https://www.google.com/maps/search/?api=1&query=%E4%B8%8A%E6%B5%B7%E6%99%AF%E9%BB%9E" target="_blank">🗺️ 開地圖看全部景點</a>
   </div>
 
 </main>
@@ -455,72 +464,72 @@ const days = [
   {
     label: "Day1 11/19", title: "抵達上海",
     items: [
-      {time:"下午", name:"台北→上海抵達，入住米可飯店公寓（長壽路）", note:"機場→長壽路：地鐵/機場巴士約1hr，RMB 8-50。落地先開VPN、換錢、辦支付寶", map:null,
+      {time:"下午", name:"台北→上海抵達，入住米可飯店公寓（長壽路）", clock:"14:00", transit:"浦東機場→地鐵2號線 或打車 約1hr", note:"機場→長壽路：地鐵/機場巴士約1hr，RMB 8-50。落地先開VPN、換錢、辦支付寶", map:null,
         detail:"浦東機場出關後可搭地鐵2號線轉乘至長壽路，或直接打車較省事（行李多建議打車，約RMB150-200）。落地第一件事先確認手機能上網、VPN連得上，再處理支付寶/現金。"},
-      {time:"晚上", name:"飯店附近覓食、休息", note:"長途飛行後不排硬行程", map:null,
+      {time:"晚上", name:"飯店附近覓食、休息", clock:"19:00", note:"長途飛行後不排硬行程", map:null,
         detail:"長壽路一帶生活機能不錯，超市、小吃店都有，第一晚不用特別安排遠程行程，先熟悉飯店周邊、調時差即可。"},
     ]
   },
   {
     label: "Day2 11/20", title: "外灘・南京路",
     items: [
-      {time:"早餐", name:"萊萊小籠包 / 小楊生煎", note:"皮薄餡多鮮肉小籠，或生煎+鴨血粉絲湯", img:"img/xiaolongbao.jpg", map:"https://www.google.com/maps/search/?api=1&query=%E4%B8%8A%E6%B5%B7%20%E5%B0%8F%E6%A5%8A%E7%94%9F%E7%85%8E",
+      {time:"早餐", name:"萊萊小籠包 / 小楊生煎", clock:"08:00", hours:"06:30–20:00", price:"人均¥20-40", addr:"南京路/人民廣場一帶", note:"皮薄餡多鮮肉小籠，或生煎+鴨血粉絲湯", img:"img/xiaolongbao.jpg", map:"https://www.google.com/maps/search/?api=1&query=%E4%B8%8A%E6%B5%B7%20%E5%B0%8F%E6%A5%8A%E7%94%9F%E7%85%8E",
         detail:"<b>簡介</b>：上海在地早餐經典，萊萊小籠主打皮薄餡多鮮肉小籠，小楊生煎則底部金黃酥脆、咬開爆湯，配咖喱牛肉湯或鴨血粉絲湯是標配。<br><b>地址/交通</b>：市區多家分店，南京路、人民廣場一帶都有，地圖搜最近分店。<br><b>營業/價位</b>：約06:30–20:00（各店不一），人均約¥20-40。<br><b>Tips</b>：現包現煎最好吃；小心爆湯燙口，先咬小口吸湯；可搭油豆腐細粉。"},
-      {time:"上午", name:"南京路步行街", note:"1.5公里商業街，可搭觀光小火車", img:"img/nanjing_road.jpg", map:"https://www.google.com/maps/search/?api=1&query=%E4%B8%8A%E6%B5%B7%20%E5%8D%97%E4%BA%AC%E8%B7%AF%E6%AD%A5%E8%A1%8C%E8%A1%97",
+      {time:"上午", name:"南京路步行街", clock:"09:30", hours:"店家10:00–22:00", addr:"黃浦區南京東路", transit:"地鐵2/10號線 南京東路站", note:"1.5公里商業街，可搭觀光小火車", img:"img/nanjing_road.jpg", map:"https://www.google.com/maps/search/?api=1&query=%E4%B8%8A%E6%B5%B7%20%E5%8D%97%E4%BA%AC%E8%B7%AF%E6%AD%A5%E8%A1%8C%E8%A1%97",
         detail:"<b>簡介</b>：上海最有名的商業步行街，東起外灘、西接人民廣場，1.5公里全是百貨、老字號、餐廳與霓虹招牌，夜晚特別熱鬧。<br><b>地址/交通</b>：黃浦區南京東路，地鐵2/10號線「南京東路站」或1/2/8號線「人民廣場站」。<br><b>營業</b>：街道全天，店家約10:00–22:00。<br><b>Tips</b>：從外灘走過來順遊最順；觀光小火車約¥5代步；沿途第一食品、新雅等老字號可買伴手禮。"},
-      {time:"下午", name:"外灘・東方明珠塔・萬國建築群", note:"三件套，日落夜景最佳時段", img:"img/the_bund.jpg", map:"https://www.google.com/maps/search/?api=1&query=%E4%B8%8A%E6%B5%B7%20%E5%A4%96%E7%81%98%20%E6%9D%B1%E6%96%B9%E6%98%8E%E7%8F%A0",
+      {time:"下午", name:"外灘・東方明珠塔・萬國建築群", clock:"14:00", hours:"東方明珠08:30–21:30", price:"聯票¥120-160", addr:"中山東一路/陸家嘴", transit:"外灘步行 或地鐵2號線 陸家嘴站", note:"三件套，日落夜景最佳時段", img:"img/the_bund.jpg", map:"https://www.google.com/maps/search/?api=1&query=%E4%B8%8A%E6%B5%B7%20%E5%A4%96%E7%81%98%20%E6%9D%B1%E6%96%B9%E6%98%8E%E7%8F%A0",
         detail:"<b>簡介</b>：外灘是上海地標，黃浦江西岸萬國建築群對望東岸陸家嘴東方明珠與摩天樓群，東方明珠可登塔，含259m觀光層與透明懸空觀光廊。<br><b>地址/交通</b>：黃浦區中山東一路（外灘）；東方明珠在浦東陸家嘴，地鐵2號線「陸家嘴站」。<br><b>營業/門票</b>：外灘全天開放；東方明珠約08:30–21:30，三球聯票約¥160、二球約¥120。<br><b>Tips</b>：黃昏前到白天夜景一次拍；東方明珠週末排隊長建議線上先買票；人多留意隨身物。"},
-      {time:"傍晚", name:"黃浦江渡輪", note:"平價版夜景船遊", img:"img/ferry.jpg", map:"https://www.google.com/maps/search/?api=1&query=%E4%B8%8A%E6%B5%B7%20%E9%BB%83%E6%B5%A6%E6%B1%9F%E8%BC%AA%E6%B8%A1",
+      {time:"傍晚", name:"黃浦江渡輪", clock:"17:30", hours:"07:00–22:00", price:"¥2", addr:"金陵東路渡口", transit:"外灘步行至渡口", note:"平價版夜景船遊", img:"img/ferry.jpg", map:"https://www.google.com/maps/search/?api=1&query=%E4%B8%8A%E6%B5%B7%20%E9%BB%83%E6%B5%A6%E6%B1%9F%E8%BC%AA%E6%B8%A1",
         detail:"<b>簡介</b>：連接外灘（浦西）與陸家嘴（浦東）的市民輪渡，當地人通勤用，票價便宜，是水路看兩岸天際線最划算的方式，比觀光遊船省很多。<br><b>地址/交通</b>：外灘金陵東路渡口等多個渡口，地圖搜「輪渡站」。<br><b>營業/票價</b>：約07:00–22:00，班次密集，票價約¥2。<br><b>Tips</b>：比觀光遊船便宜十幾倍、景一樣；上層甲板視野好；避開上下班尖峰較舒適。"},
-      {time:"晚餐", name:"太二酸菜魚", note:"川味酸菜魚", img:"img/suancaiyu.jpg", map:"https://www.google.com/maps/search/?api=1&query=%E5%A4%AA%E4%BA%8C%E9%85%B8%E8%8F%9C%E9%AD%9A%20%E4%B8%8A%E6%B5%B7%20%E5%A4%96%E7%81%98",
+      {time:"晚餐", name:"太二酸菜魚", clock:"19:00", hours:"11:00–21:30", price:"人均¥80-100", addr:"外灘周邊", note:"川味酸菜魚，常需候位", img:"img/suancaiyu.jpg", map:"https://www.google.com/maps/search/?api=1&query=%E5%A4%AA%E4%BA%8C%E9%85%B8%E8%8F%9C%E9%AD%9A%20%E4%B8%8A%E6%B5%B7%20%E5%A4%96%E7%81%98",
         detail:"<b>簡介</b>：全國連鎖酸菜魚名店，主打老壇子酸菜搭鱸魚片，湯酸辣開胃，只賣鱸魚酸菜魚一種魚、規定每桌限四人。<br><b>地址/交通</b>：南京路/外灘周邊多家分店，地圖搜最近點。<br><b>營業/價位</b>：約11:00–21:30，人均約¥80-100，常需候位。<br><b>Tips</b>：份量大建議適量點；建議避開用餐尖峰或先線上取號。"},
     ]
   },
   {
     label: "Day3 11/21", title: "朱家角古鎮一日遊",
     items: [
-      {time:"早餐", name:"煎餅果子", note:"街邊經典早餐", img:"img/jianbing.jpg", map:"https://www.google.com/maps/search/?api=1&query=%E4%B8%8A%E6%B5%B7%20%E7%85%8E%E9%A4%85%E6%9E%9C%E5%AD%90",
+      {time:"早餐", name:"煎餅果子", clock:"07:30", hours:"早上–中午賣完收", price:"¥8-15", note:"街邊經典早餐", img:"img/jianbing.jpg", map:"https://www.google.com/maps/search/?api=1&query=%E4%B8%8A%E6%B5%B7%20%E7%85%8E%E9%A4%85%E6%9E%9C%E5%AD%90",
         detail:"<b>簡介</b>：中式早餐代表，薄麵糊鐵板攤成餅，打蛋、刷醬、加脆餅與蔥香菜，捲起即食。<br><b>地址/交通</b>：古鎮/街邊早餐攤皆有，可問當地人哪攤排隊多。<br><b>營業/價位</b>：通常早上到中午，賣完收攤，一份約¥8-15。<br><b>Tips</b>：要加薄脆才有靈魂；現做現吃最酥；可選加火腿/里脊。"},
-      {time:"全天", name:"朱家角古鎮", note:"地鐵+公車約1.5hr。江南水鄉，放生橋、搖櫓船、扎肉、阿婆粽", img:"img/zhujiajiao.jpg", map:"https://www.google.com/maps/search/?api=1&query=%E4%B8%8A%E6%B5%B7%20%E6%9C%B1%E5%AE%B6%E8%A7%92%E5%8F%A4%E9%8E%AE",
+      {time:"全天", name:"朱家角古鎮", clock:"09:00", hours:"古鎮全天/景點約08:30–16:30", price:"聯票¥30-80、搖櫓¥150/船", addr:"青浦區朱家角", transit:"地鐵17號線 朱家角站+接駁 約1-1.5hr", note:"江南水鄉，放生橋、搖櫓船、扎肉、阿婆粽", img:"img/zhujiajiao.jpg", map:"https://www.google.com/maps/search/?api=1&query=%E4%B8%8A%E6%B5%B7%20%E6%9C%B1%E5%AE%B6%E8%A7%92%E5%8F%A4%E9%8E%AE",
         detail:"<b>簡介</b>：上海近郊保存最好的江南水鄉古鎮，明清石橋、河道、老街與搖櫓船，放生橋是地標。<br><b>地址/交通</b>：青浦區朱家角，市區搭地鐵17號線「朱家角站」再轉接駁或客運，車程約1-1.5小時。<br><b>營業/門票</b>：古鎮免費進，部分景點（課植園等）聯票約¥30-80，搖櫓船約¥150/船。<br><b>Tips</b>：搭一趟搖櫓船看水鄉；嘗扎肉、阿婆粽、熏豆茶；避開週末人潮，早點出發。"},
-      {time:"晚餐", name:"滬西老弄堂", note:"本幫菜，紅燒濃油赤醬，接地氣", map:"https://www.google.com/maps/search/?api=1&query=%E6%BB%AC%E8%A5%BF%E8%80%81%E5%BC%84%E5%A0%82%20%E4%B8%8A%E6%B5%B7",
+      {time:"晚餐", name:"滬西老弄堂", clock:"18:30", hours:"11:00–21:00", price:"人均¥60-90", note:"本幫菜，紅燒濃油赤醬，接地氣", map:"https://www.google.com/maps/search/?api=1&query=%E6%BB%AC%E8%A5%BF%E8%80%81%E5%BC%84%E5%A0%82%20%E4%B8%8A%E6%B5%B7",
         detail:"<b>簡介</b>：主打上海弄堂家常味的本幫菜館，懷舊弄堂裝潢，紅燒、濃油赤醬路線，氣氛接地氣。<br><b>地址/交通</b>：市區分店，地圖搜最近點。<br><b>營業/價位</b>：約11:00–21:00，人均約¥60-90。<br><b>Tips</b>：點本幫招牌紅燒肉、油爆蝦；懷舊裝潢適合拍照；熱門時段建議訂位。"},
     ]
   },
   {
     label: "Day4 11/22", title: "武康路・梧桐區",
     items: [
-      {time:"早餐", name:"小楊生煎", note:"底脆皮鬆，配咖喱牛肉湯", img:"img/shengjian.jpg", map:"https://www.google.com/maps/search/?api=1&query=%E4%B8%8A%E6%B5%B7%20%E5%B0%8F%E6%A5%8A%E7%94%9F%E7%85%8E",
+      {time:"早餐", name:"小楊生煎", clock:"08:00", hours:"07:00–21:00", price:"人均¥20-35", addr:"吳江路等分店", note:"底脆皮鬆，配咖喱牛肉湯", img:"img/shengjian.jpg", map:"https://www.google.com/maps/search/?api=1&query=%E4%B8%8A%E6%B5%B7%20%E5%B0%8F%E6%A5%8A%E7%94%9F%E7%85%8E",
         detail:"<b>簡介</b>：上海生煎名店，底脆、皮鬆、湯多，經典鮮肉生煎也有蝦仁口味，搭咖喱牛肉湯/鴨血粉絲湯最對味。<br><b>地址/交通</b>：市區多家分店（吳江路等），地圖搜最近點。<br><b>營業/價位</b>：約07:00–21:00，人均約¥20-35。<br><b>Tips</b>：先咬小口吸湯免燙；蝦仁生煎可一試；現煎那爐最酥。"},
-      {time:"上午", name:"武康大樓", note:"IG打卡熱點，1924年Art Deco建築", img:"img/wukang_bldg.jpg", map:"https://www.google.com/maps/search/?api=1&query=%E4%B8%8A%E6%B5%B7%20%E6%AD%A6%E5%BA%B7%E5%A4%A7%E6%A8%93",
+      {time:"上午", name:"武康大樓", clock:"09:30", hours:"外觀全天", addr:"武康路/淮海中路口", transit:"地鐵10/11號線 交通大學站", note:"IG打卡熱點，1924年Art Deco建築", img:"img/wukang_bldg.jpg", map:"https://www.google.com/maps/search/?api=1&query=%E4%B8%8A%E6%B5%B7%20%E6%AD%A6%E5%BA%B7%E5%A4%A7%E6%A8%93",
         detail:"<b>簡介</b>：上海最上鏡的歷史建築，1924年船型Art Deco公寓樓，位於六岔路口，梧桐區氛圍滿分，是IG打卡熱點。<br><b>地址/交通</b>：徐匯區武康路/淮海中路口，地鐵10/11號線「交通大學站」或「上海圖書館站」步行。<br><b>營業</b>：外觀全天可看（不可入內），免費，周邊店家約10:00–22:00。<br><b>Tips</b>：經典機位在對街路口斜拍船頭；梧桐季（秋）最美；順遊武康路、安福路小店與咖啡。"},
-      {time:"下午", name:"豫園", note:"明代園林+城隍廟商城，小吃集中", img:"img/yuyuan.jpg", map:"https://www.google.com/maps/search/?api=1&query=%E4%B8%8A%E6%B5%B7%20%E8%B1%AB%E5%9C%92",
+      {time:"下午", name:"豫園", clock:"13:30", hours:"園林09:00–16:30", price:"門票¥30-40", addr:"黃浦區安仁街", transit:"地鐵14號線 豫園站", note:"明代園林+城隍廟商城，小吃集中", img:"img/yuyuan.jpg", map:"https://www.google.com/maps/search/?api=1&query=%E4%B8%8A%E6%B5%B7%20%E8%B1%AB%E5%9C%92",
         detail:"<b>簡介</b>：明代古典園林（始建1559），亭台樓閣、假山池水，旁邊是豫園商城與城隍廟，老上海風情濃。<br><b>地址/交通</b>：黃浦區安仁街，地鐵14號線「豫園站」或10號線「豫園站」。<br><b>營業/門票</b>：園林約09:00–16:30（售票至16:00），門票約¥30-40，商城/廟全天。<br><b>Tips</b>：園林與商城是兩回事，園林要票；南翔饅頭店排隊吃小籠；傍晚商城亮燈好拍。"},
-      {time:"晚餐", name:"裕興記（蟹粉麵）", note:"蘇式麵，蟹粉/三蝦麵，價位偏高", map:"https://www.google.com/maps/search/?api=1&query=%E8%A3%95%E8%88%88%E8%A8%98%20%E4%B8%8A%E6%B5%B7",
+      {time:"晚餐", name:"裕興記（蟹粉麵）", clock:"18:30", hours:"10:30–20:30", price:"蟹粉/三蝦麵¥80-160", note:"蘇式麵，蟹粉/三蝦麵，價位偏高", map:"https://www.google.com/maps/search/?api=1&query=%E8%A3%95%E8%88%88%E8%A8%98%20%E4%B8%8A%E6%B5%B7",
         detail:"<b>簡介</b>：蘇式麵名店，招牌三蝦麵、蟹粉麵，秋季大閘蟹蟹粉拌麵極鮮，湯頭講究、現拆蟹粉，價位偏高但用料實。<br><b>地址/交通</b>：市區分店，地圖搜最近點。<br><b>營業/價位</b>：約10:30–20:30，蟹粉/三蝦麵約¥80-160。<br><b>Tips</b>：秋天吃蟹粉/三蝦最當季；現拆蟹粉鮮味足；熱門需候位，建議避尖峰。"},
     ]
   },
   {
     label: "Day5 11/23", title: "南京路續逛・星巴克・收尾",
     items: [
-      {time:"上午", name:"南京路步行街（沒逛完的部分）", note:"購物/補拍照", map:"https://www.google.com/maps/search/?api=1&query=%E4%B8%8A%E6%B5%B7%20%E5%8D%97%E4%BA%AC%E8%B7%AF%E6%AD%A5%E8%A1%8C%E8%A1%97",
+      {time:"上午", name:"南京路步行街（沒逛完的部分）", clock:"10:00", addr:"黃浦區南京東路", transit:"地鐵2/10號線 南京東路站", note:"購物/補拍照，上午人潮少", map:"https://www.google.com/maps/search/?api=1&query=%E4%B8%8A%E6%B5%B7%20%E5%8D%97%E4%BA%AC%E8%B7%AF%E6%AD%A5%E8%A1%8C%E8%A1%97",
         detail:"把Day2沒逛完的店家、伴手禮採買補齊，上午人潮相對少，適合安排血拼跟拍照，細節同Day2南京路步行街介紹。"},
-      {time:"下午", name:"LV遊輪", note:"較精緻版黃浦江遊船", map:"https://www.google.com/maps/search/?api=1&query=%E4%B8%8A%E6%B5%B7%20LV%20%E8%B7%AF%E6%98%93%E5%A8%81%E7%99%BB%20%E5%A4%96%E7%81%98",
+      {time:"下午", name:"LV遊輪", clock:"14:00", hours:"店家10:00–22:00/外觀全天", addr:"中山東一路外灘", note:"外灘LV船型旗艦店，建築櫥窗打卡", map:"https://www.google.com/maps/search/?api=1&query=%E4%B8%8A%E6%B5%B7%20LV%20%E8%B7%AF%E6%98%93%E5%A8%81%E7%99%BB%20%E5%A4%96%E7%81%98",
         detail:"<b>簡介</b>：指外灘的路易威登旗艦概念店（船型/遊輪造型外觀，常被稱「LV大船」），外灘地標性精品店，建築與櫥窗本身就是打卡點。<br><b>地址/交通</b>：黃浦區中山東一路外灘沿線，地鐵2/10號線「南京東路站」步行。<br><b>營業</b>：店家約10:00–22:00，外觀全天可拍。<br><b>Tips</b>：夜間外觀亮燈好拍；在外灘段可順遊南京路；入店參觀注意精品店禮儀。"},
-      {time:"下午", name:"星巴克烘焙工坊", note:"全球最大星巴克門市", img:"img/starbucks.jpg", map:"https://www.google.com/maps/search/?api=1&query=%E4%B8%8A%E6%B5%B7%20%E6%98%9F%E5%B7%B4%E5%85%8B%E7%83%98%E7%84%99%E5%B7%A5%E5%9D%8A%20%E5%8D%97%E4%BA%AC%E8%B7%AF",
+      {time:"下午", name:"星巴克烘焙工坊", clock:"15:30", hours:"07:00–23:00", price:"飲品¥40起", addr:"南京西路789號 興業太古匯", transit:"地鐵2/12/13號線 南京西路站", note:"全球最大星巴克之一，現場烘豆", img:"img/starbucks.jpg", map:"https://www.google.com/maps/search/?api=1&query=%E4%B8%8A%E6%B5%B7%20%E6%98%9F%E5%B7%B4%E5%85%8B%E7%83%98%E7%84%99%E5%B7%A5%E5%9D%8A%20%E5%8D%97%E4%BA%AC%E8%B7%AF",
         detail:"<b>簡介</b>：星巴克臻選上海烘焙工坊，全球最大星巴克之一（2700㎡），現場烘豆、特調與茶飲(Teavana)、義式餐點，銅製管路工業風場景，體驗型旗艦店。<br><b>地址/交通</b>：靜安區南京西路789號興業太古匯，地鐵2/12/13號線「南京西路站」。<br><b>營業/價位</b>：約07:00–23:00，飲品¥40起。<br><b>Tips</b>：看現場烘豆與輸豆銅管；限定杯/豆可當伴手禮；人多，平日上午較好逛。"},
-      {time:"晚餐", name:"海底撈", note:"服務體驗知名，適合收尾聚餐", img:"img/haidilao.jpg", map:"https://www.google.com/maps/search/?api=1&query=%E6%B5%B7%E5%BA%95%E6%92%88%20%E4%B8%8A%E6%B5%B7%20%E5%8D%97%E4%BA%AC%E8%B7%AF",
+      {time:"晚餐", name:"海底撈", clock:"18:30", hours:"10:00–次日凌晨", price:"人均¥120-180", addr:"南京路/市區分店", note:"服務體驗知名，適合收尾聚餐", img:"img/haidilao.jpg", map:"https://www.google.com/maps/search/?api=1&query=%E6%B5%B7%E5%BA%95%E6%92%88%20%E4%B8%8A%E6%B5%B7%20%E5%8D%97%E4%BA%AC%E8%B7%AF",
         detail:"<b>簡介</b>：知名連鎖火鍋，以服務著稱（等位有美甲/小吃、生日慶祝、變臉表演視門店），鍋底湯頭多選、撈麵表演，適合多人聚餐。<br><b>地址/交通</b>：南京路/市區多家分店，地圖搜最近點。<br><b>營業/價位</b>：多為10:00–次日凌晨，人均約¥120-180。<br><b>Tips</b>：尖峰排隊久可線上取號；等位區有免費小吃/服務；可點撈麵表演與小料自助。"},
-      {time:"晚上", name:"按摩", note:"隔天返程前放鬆", map:"https://www.google.com/maps/search/?api=1&query=%E4%B8%8A%E6%B5%B7%20%E6%8C%89%E6%91%A9%20%E5%8D%97%E4%BA%AC%E8%B7%AF",
+      {time:"晚上", name:"按摩", clock:"21:00", hours:"多營業至深夜", price:"足療¥80-200/節", note:"隔天返程前放鬆", map:"https://www.google.com/maps/search/?api=1&query=%E4%B8%8A%E6%B5%B7%20%E6%8C%89%E6%91%A9%20%E5%8D%97%E4%BA%AC%E8%B7%AF",
         detail:"<b>簡介</b>：行程收尾放鬆，上海腳底/全身按摩、足浴店多，連鎖（如富僑、良子）與在地店皆有。<br><b>地址/交通</b>：南京路/市區商圈多家，地圖搜「足道/按摩」就近選評價高的。<br><b>營業/價位</b>：多營業至深夜（約11:00–次日02:00），足療約¥80-200/節。<br><b>Tips</b>：挑連鎖或高評價較有保障；先確認價目與時長再開始；可指定力道輕重。"},
     ]
   },
   {
     label: "Day6 11/24", title: "返程",
     items: [
-      {time:"上午", name:"飯店退房，簡單早餐", note:"", map:null,
+      {time:"上午", name:"飯店退房，簡單早餐", clock:"09:00", note:"確認押金退還，重要物品放隨身", map:null,
         detail:"退房前確認押金退還狀況，行李打包預留隨身重要物品（證件、機票確認函）方便過安檢時拿取。"},
-      {time:"中午前", name:"前往機場，上海→台北", note:"地鐵/機場巴士", map:null,
+      {time:"中午前", name:"前往機場，上海→台北", clock:"11:00", transit:"地鐵/機場巴士，預留2.5-3hr", note:"提早出發，尖峰較擠", map:null,
         detail:"預留至少2.5-3小時給機場流程（報到、安檢、登機），尖峰時段地鐵/機場巴士也可能較擁擠，建議提早出發。"},
     ]
   },
@@ -555,9 +564,14 @@ function renderDay(idx){
     orderOf(idx).map(ii => {
       const it = d.items[ii];
       const vis = store.visited[idx + '-' + ii];
+      const chips = [
+        it.hours ? `<span class="chip">⏰ ${it.hours}</span>` : '',
+        it.price ? `<span class="chip">💰 ${it.price}</span>` : '',
+        it.addr ? `<span class="chip">📍 ${it.addr}</span>` : '',
+      ].join('');
       return `
-      <div class="item${vis ? ' visited' : ''}" data-ii="${ii}">
-        <div class="time">${it.time}</div>
+      <div class="item${vis ? ' visited' : ''}${it.detail ? ' expanded' : ''}" data-ii="${ii}">
+        <div class="time">${it.clock ? `<span class="clk">${it.clock}</span>` : ''}${it.time}</div>
         <div class="name">
           <button class="check" title="標記去過">✓</button>
           <span class="txt">${it.name}</span>
@@ -565,7 +579,9 @@ function renderDay(idx){
           <span class="handle">⠿</span>
         </div>
         ${it.img ? `<img class="photo" src="${it.img}" loading="lazy" alt="${it.name}">` : ''}
+        ${it.transit ? `<div class="transit">🚉 ${it.transit}</div>` : ''}
         ${it.note ? `<div class="note">${it.note}</div>` : ''}
+        ${chips ? `<div class="chips">${chips}</div>` : ''}
         <div class="row">
           ${it.map ? `<a class="maplink" href="${mapUrl(it.map)}" target="_blank" onclick="event.stopPropagation()">📍 導航</a>` : ''}
         </div>
