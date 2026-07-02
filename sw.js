@@ -1,4 +1,4 @@
-const APP_CACHE = 'shanghai-trip-app-v1';
+const APP_CACHE = 'shanghai-trip-app-v2';
 const TILE_CACHE = 'shanghai-trip-tiles-v1';
 const APP_ASSETS = [
   './',
@@ -58,7 +58,7 @@ self.addEventListener('fetch', event => {
   const url = new URL(request.url);
 
   if(url.hostname === 'tile.openstreetmap.org'){
-    event.respondWith(cacheFirst(request, TILE_CACHE, 350));
+    event.respondWith(cacheFirst(request, TILE_CACHE, 600));
     return;
   }
 
