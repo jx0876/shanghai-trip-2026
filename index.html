@@ -391,6 +391,8 @@
         <h3>離線地圖說明</h3>
         <p>景點清單、標記、行程 App 會離線保存。底圖會在你在線看過後快取，離線時可查看已快取過的區域。</p>
         <p>出發前先打開這頁，把上海市區、朱家角、蘇州、機場附近縮放滑過一次，旅行時比較穩。</p>
+        <button id="btnPrefetch" class="bigmap" style="border:0;cursor:pointer;margin:6px 0 0;">⬇️ 一鍵預抓離線底圖（上海／蘇州／朱家角／機場）</button>
+        <p class="fx-note" id="prefetchMsg" style="margin-top:8px;">出發前連網點一次，把這四區底圖存進手機，旅行時離線也能看。</p>
       </div>
       <div class="daytabs" id="placeDayTabs"></div>
       <div class="place-list" id="placeList"></div>
@@ -453,6 +455,16 @@
   <!-- 實用 -->
   <div class="page" id="page-tools">
     <div class="info-card">
+      <h3>💾 資料備份／還原</h3>
+      <p style="font-size:13px;color:var(--text-dim);line-height:1.6;margin:0 0 4px;">備份行程排序、打勾、行李清單、分帳到一個檔。換手機、清瀏覽資料或無痕開會掉資料，先匯出留底；要用時再匯入還原。</p>
+      <div class="map-actions" style="margin-top:8px;">
+        <button id="btnExport">⬇️ 匯出備份檔</button>
+        <button id="btnImport">⬆️ 匯入還原</button>
+      </div>
+      <input id="importFile" type="file" accept="application/json,.json" hidden>
+      <p class="fx-note" id="backupMsg" style="margin-top:8px;"></p>
+    </div>
+    <div class="info-card">
       <h3>📞 緊急/實用電話</h3>
       <div class="tel"><span class="lbl">報警</span><a href="tel:110">110</a></div>
       <div class="tel"><span class="lbl">急救 / 醫療</span><a href="tel:120">120</a></div>
@@ -499,6 +511,7 @@
 <script src="vendor/leaflet/leaflet.js"></script>
 <script>
 const mapUrl = q => q.startsWith('http') ? q : "https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(q);
+const escHtml = s => String(s).replace(/[&<>"]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 
 const days = [
   {
@@ -1048,21 +1061,47 @@ function renderSettle(){
     const share = e.shared.length ? (+e.amount||0)/e.shared.length : 0;
     e.shared.forEach(m=> owe[m] = (owe[m]||0) + share);
   });
-  const rows = MEMBERS.map(m=>{
-    const net = Math.round((paid[m]||0) - (owe[m]||0));
+  const net = {};
+  const netRows = MEMBERS.map(m=>{
+    net[m] = Math.round((paid[m]||0) - (owe[m]||0));
     let cls='zero', txt='打平';
-    if(net>0){ cls='pos'; txt=`應收 ¥${net}`; }
-    else if(net<0){ cls='neg'; txt=`應付 ¥${-net}`; }
+    if(net[m]>0){ cls='pos'; txt=`應收 ¥${net[m]}`; }
+    else if(net[m]<0){ cls='neg'; txt=`應付 ¥${-net[m]}`; }
     return `<div class="srow"><span>${m}</span><span class="${cls}">${txt}</span></div>`;
   }).join('');
-  settle.innerHTML = `<div class="fx-note" style="margin-bottom:6px;">結算（正=別人還你，負=你要付給別人）</div>${rows}`;
+
+  // 每人花費總表:付了多少 / 分攤多少
+  const perRows = MEMBERS.map(m=>
+    `<div class="srow"><span>${m}</span><span>付 ¥${Math.round(paid[m]||0)}　·　分攤 ¥${Math.round(owe[m]||0)}</span></div>`
+  ).join('');
+
+  // 最小轉帳:誰付給誰(貪婪配對債權/債務)
+  const cred = [], debt = [];
+  MEMBERS.forEach(m=>{ if(net[m]>0) cred.push({m, v:net[m]}); else if(net[m]<0) debt.push({m, v:-net[m]}); });
+  const transfers = [];
+  let ci=0, di=0;
+  while(ci<cred.length && di<debt.length){
+    const amt = Math.min(cred[ci].v, debt[di].v);
+    if(amt>0) transfers.push(`${debt[di].m} → ${cred[ci].m}　¥${amt}`);
+    cred[ci].v -= amt; debt[di].v -= amt;
+    if(cred[ci].v===0) ci++;
+    if(debt[di].v===0) di++;
+  }
+  const transRows = transfers.length
+    ? transfers.map(t=>`<div class="srow"><span>${t}</span><span></span></div>`).join('')
+    : '<div class="srow"><span class="zero">已全部打平，免轉帳</span><span></span></div>';
+
+  settle.innerHTML =
+    `<div class="fx-note" style="margin:2px 0 6px;">💸 誰付給誰（最少轉帳）</div>${transRows}` +
+    `<div class="fx-note" style="margin:14px 0 6px;">🧮 每人花費總表</div>${perRows}` +
+    `<div class="fx-note" style="margin:14px 0 6px;">📊 結算淨額（正=別人還你，負=你要付給別人）</div>${netRows}`;
 }
 
 function renderExpenses(){
   const list = [...store.expenses].sort((a,b)=> a.date===b.date ? b.id-a.id : (a.date<b.date?1:-1));
   expList.innerHTML = list.map(e=>`
     <div class="exp-item" data-id="${e.id}">
-      <div class="ei"><b>${e.name || '(未命名)'}</b><span>${fmtDate(e.date)} · ${e.payer}付 · 分${e.shared.length}人</span></div>
+      <div class="ei"><b>${e.name ? escHtml(e.name) : '(未命名)'}</b><span>${fmtDate(e.date)} · ${escHtml(e.payer)}付 · 分${e.shared.length}人</span></div>
       <div class="amt">¥${Math.round(e.amount)}</div>
       <button class="act" data-act="edit" aria-label="編輯">✎</button>
       <button class="act" data-act="del" aria-label="刪除">🗑</button>
@@ -1192,6 +1231,80 @@ function bindPacking(){
   }
 }
 renderPacking();
+
+// ---- 資料備份／還原（匯出/匯入整包 localStorage） ----
+const btnExport = document.getElementById('btnExport');
+const btnImport = document.getElementById('btnImport');
+const importFile = document.getElementById('importFile');
+const backupMsg = document.getElementById('backupMsg');
+btnExport?.addEventListener('click', ()=>{
+  const data = localStorage.getItem('shTrip') || '{}';
+  const blob = new Blob([data], {type:'application/json'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = '上海行程備份.json'; a.click();
+  URL.revokeObjectURL(url);
+  if(backupMsg) backupMsg.textContent = '✅ 已匯出「上海行程備份.json」到下載資料夾，收好它。';
+});
+btnImport?.addEventListener('click', ()=> importFile?.click());
+importFile?.addEventListener('change', e=>{
+  const f = e.target.files[0];
+  e.target.value = '';
+  if(!f) return;
+  const reader = new FileReader();
+  reader.onload = ()=>{
+    let obj;
+    try{ obj = JSON.parse(reader.result); }catch(err){ if(backupMsg) backupMsg.textContent = '❌ 檔案格式錯誤，還原失敗。'; return; }
+    if(typeof obj !== 'object' || !obj){ if(backupMsg) backupMsg.textContent = '❌ 不是有效的備份檔。'; return; }
+    if(!confirm('還原會「覆蓋」本機目前的行程排序／打勾／行李／分帳，確定？')) return;
+    localStorage.setItem('shTrip', JSON.stringify(obj));
+    location.reload();
+  };
+  reader.readAsText(f);
+});
+
+// ---- 一鍵預抓離線底圖 ----
+const lon2tx = (lon,z)=> Math.floor((lon+180)/360*Math.pow(2,z));
+const lat2ty = (lat,z)=>{ const r=lat*Math.PI/180; return Math.floor((1-Math.log(Math.tan(r)+1/Math.cos(r))/Math.PI)/2*Math.pow(2,z)); };
+const PREFETCH_REGIONS = [
+  {latMin:31.20, latMax:31.27, lngMin:121.42, lngMax:121.53, zooms:[12,13,14]}, // 上海市區
+  {latMin:31.09, latMax:31.12, lngMin:121.03, lngMax:121.08, zooms:[12,13,14]}, // 朱家角
+  {latMin:31.29, latMax:31.34, lngMin:120.55, lngMax:120.66, zooms:[12,13,14]}, // 蘇州
+  {latMin:31.12, latMax:31.17, lngMin:121.78, lngMax:121.84, zooms:[12,13]},    // 機場
+];
+function prefetchTileUrls(){
+  const urls = new Set();
+  PREFETCH_REGIONS.forEach(r=> r.zooms.forEach(z=>{
+    const xs=[lon2tx(r.lngMin,z), lon2tx(r.lngMax,z)];
+    const ys=[lat2ty(r.latMax,z), lat2ty(r.latMin,z)];
+    for(let x=Math.min(...xs); x<=Math.max(...xs); x++)
+      for(let y=Math.min(...ys); y<=Math.max(...ys); y++)
+        urls.add(`https://tile.openstreetmap.org/${z}/${x}/${y}.png`);
+  }));
+  return [...urls];
+}
+const btnPrefetch = document.getElementById('btnPrefetch');
+const prefetchMsg = document.getElementById('prefetchMsg');
+let prefetching = false;
+btnPrefetch?.addEventListener('click', async ()=>{
+  if(prefetching) return;
+  if(!navigator.onLine){ if(prefetchMsg) prefetchMsg.textContent = '⚠️ 目前離線，請連網後再預抓。'; return; }
+  const urls = prefetchTileUrls();
+  prefetching = true; btnPrefetch.disabled = true; btnPrefetch.style.opacity = '.6';
+  let done=0, fail=0;
+  const queue = urls.slice();
+  async function worker(){
+    while(queue.length){
+      const u = queue.shift();
+      try{ await fetch(u, {cache:'no-store'}); }catch(e){ fail++; }
+      done++;
+      if(prefetchMsg && (done%8===0 || done===urls.length)) prefetchMsg.textContent = `預抓中… ${done}/${urls.length}`;
+    }
+  }
+  await Promise.all(Array.from({length:6}, worker));
+  prefetching = false; btnPrefetch.disabled = false; btnPrefetch.style.opacity = '';
+  if(prefetchMsg) prefetchMsg.textContent = `✅ 完成，已快取 ${urls.length-fail}/${urls.length} 張底圖${fail?`（${fail} 張失敗，可再點一次補）`:''}。離線也能看這四區。`;
+});
 
 window.addEventListener('online', updateOfflineStatus);
 window.addEventListener('offline', updateOfflineStatus);
