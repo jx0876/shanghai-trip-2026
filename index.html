@@ -3,7 +3,10 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="theme-color" content="#e07a3c">
 <title>上海行程 2026.11.19-24</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="stylesheet" href="vendor/leaflet/leaflet.css">
 <style>
   @font-face{
     font-family:"Noto Sans TC";font-style:normal;font-weight:400;font-display:swap;
@@ -255,6 +258,44 @@
     display:block;text-align:center;background:var(--accent);color:var(--on-accent);
     font-weight:700;font-size:14px;padding:12px;border-radius:12px;text-decoration:none;margin-bottom:12px;
   }
+  .map-shell{
+    display:grid;gap:12px;
+  }
+  #tripMap{
+    width:100%;height:min(62vh,520px);min-height:360px;
+    border:1px solid var(--border);border-radius:14px;overflow:hidden;background:var(--card2);
+  }
+  .leaflet-container{font-family:inherit;background:var(--card2);}
+  .leaflet-popup-content{font-family:inherit;font-size:13px;line-height:1.45;}
+  .map-toolbar{display:flex;gap:8px;overflow-x:auto;padding-bottom:2px;}
+  .map-toolbar button{
+    flex:0 0 auto;border:1px solid var(--border);background:var(--card);color:var(--text-dim);
+    border-radius:20px;padding:8px 12px;font-size:12px;font-weight:700;white-space:nowrap;
+  }
+  .map-toolbar button.active{background:var(--accent);border-color:var(--accent);color:var(--on-accent);}
+  .offline-pill{
+    display:inline-flex;align-items:center;gap:6px;width:max-content;
+    background:var(--card2);color:var(--text-dim);border:1px solid var(--border);
+    border-radius:999px;padding:6px 10px;font-size:12px;font-weight:700;
+  }
+  .offline-pill.on{background:var(--accent);border-color:var(--accent);color:var(--on-accent);}
+  .place-list{display:grid;gap:8px;}
+  .place-row{
+    display:flex;align-items:center;gap:10px;background:var(--card);border:1px solid var(--border);
+    border-radius:12px;padding:10px 12px;
+  }
+  .place-row b{font-size:14px;}
+  .place-row span{display:block;font-size:12px;color:var(--text-dim);margin-top:2px;}
+  .place-row button{
+    margin-left:auto;border:0;background:var(--accent);color:var(--on-accent);
+    border-radius:10px;padding:7px 10px;font-size:12px;font-weight:700;
+  }
+  @media (max-width:430px){
+    main{padding-left:12px;padding-right:12px;}
+    #tripMap{height:54vh;min-height:330px;}
+    nav button{font-size:9px;}
+    nav button .ic{font-size:19px;}
+  }
 </style>
 </head>
 <body>
@@ -279,6 +320,29 @@
   <div class="page active" id="page-days">
     <div class="daytabs" id="daytabs"></div>
     <div id="daycontent"></div>
+  </div>
+
+  <!-- 離線地圖 -->
+  <div class="page" id="page-map">
+    <div class="map-shell">
+      <div class="offline-pill" id="offlineStatus">準備離線地圖</div>
+      <div class="map-toolbar" id="mapFilters">
+        <button class="active" data-day="all">全部</button>
+        <button data-day="0">Day1</button>
+        <button data-day="1">Day2</button>
+        <button data-day="2">Day3</button>
+        <button data-day="3">Day4</button>
+        <button data-day="4">Day5</button>
+        <button data-day="5">Day6</button>
+      </div>
+      <div id="tripMap" aria-label="上海離線地圖"></div>
+      <div class="info-card">
+        <h3>離線地圖說明</h3>
+        <p>景點清單、標記、行程 App 會離線保存。底圖會在你在線看過後快取，離線時可查看已快取過的區域。</p>
+        <p>出發前先打開這頁，把上海市區、朱家角、機場附近縮放滑過一次，旅行時比較穩。</p>
+      </div>
+      <div class="place-list" id="placeList"></div>
+    </div>
   </div>
 
   <!-- 交通 -->
@@ -450,6 +514,7 @@
 
 <nav>
   <button class="active" data-page="page-days"><span class="ic">📅</span>每日行程</button>
+  <button data-page="page-map"><span class="ic">🗺️</span>地圖</button>
   <button data-page="page-transport"><span class="ic">🚇</span>交通</button>
   <button data-page="page-hotel"><span class="ic">🏨</span>住宿</button>
   <button data-page="page-packing"><span class="ic">🧳</span>行李</button>
@@ -457,6 +522,7 @@
   <button data-page="page-tools"><span class="ic">🧰</span>實用</button>
 </nav>
 
+<script src="vendor/leaflet/leaflet.js"></script>
 <script>
 const mapUrl = q => q.startsWith('http') ? q : "https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(q);
 
@@ -533,6 +599,23 @@ const days = [
         detail:"預留至少2.5-3小時給機場流程（報到、安檢、登機），尖峰時段地鐵/機場巴士也可能較擁擠，建議提早出發。"},
     ]
   },
+];
+
+const mapPlaces = [
+  {day:0, name:"浦東國際機場", type:"交通", lat:31.1443, lng:121.8083, note:"抵達/返程機場"},
+  {day:0, name:"米可飯店公寓（長壽路）", type:"住宿", lat:31.2393, lng:121.4369, note:"上海市靜安區安遠路588號"},
+  {day:1, name:"南京路步行街", type:"景點", lat:31.2359, lng:121.4747, note:"Day2 / Day5 購物散步"},
+  {day:1, name:"外灘", type:"景點", lat:31.2401, lng:121.4908, note:"萬國建築群與夜景"},
+  {day:1, name:"東方明珠塔", type:"景點", lat:31.2397, lng:121.4998, note:"陸家嘴地標"},
+  {day:1, name:"金陵東路渡口", type:"交通", lat:31.2306, lng:121.4944, note:"黃浦江渡輪"},
+  {day:1, name:"太二酸菜魚（外灘周邊）", type:"餐飲", lat:31.2368, lng:121.4846, note:"晚餐候位抓時間"},
+  {day:2, name:"朱家角古鎮", type:"景點", lat:31.1078, lng:121.0566, note:"水鄉古鎮一日遊"},
+  {day:3, name:"武康大樓", type:"景點", lat:31.2057, lng:121.4386, note:"武康路打卡點"},
+  {day:3, name:"豫園", type:"景點", lat:31.2272, lng:121.4920, note:"園林與城隍廟商城"},
+  {day:4, name:"LV 大船 / 外灘", type:"景點", lat:31.2392, lng:121.4898, note:"外灘船型旗艦店"},
+  {day:4, name:"星巴克烘焙工坊", type:"餐飲", lat:31.2298, lng:121.4597, note:"南京西路789號"},
+  {day:4, name:"海底撈（南京路周邊）", type:"餐飲", lat:31.2355, lng:121.4758, note:"收尾聚餐"},
+  {day:5, name:"返程機場方向", type:"交通", lat:31.1443, lng:121.8083, note:"預留 2.5-3 小時"}
 ];
 
 const daytabs = document.getElementById('daytabs');
@@ -691,6 +774,96 @@ days.forEach((d,i)=>{
 });
 renderDay(0);
 
+// ---- offline Leaflet map ----
+let tripMap;
+let placeLayer;
+let activeMapDay = 'all';
+
+function placesFor(day){
+  return day === 'all' ? mapPlaces : mapPlaces.filter(p => p.day === Number(day));
+}
+
+function markerIcon(type){
+  const colors = {住宿:'#3b82c4', 餐飲:'#e07a3c', 交通:'#16a34a', 景點:'#c026d3'};
+  const color = colors[type] || '#e07a3c';
+  return L.divIcon({
+    className:'trip-pin',
+    html:`<span style="display:block;width:18px;height:18px;border-radius:50%;background:${color};border:3px solid #fff;box-shadow:0 1px 6px rgba(0,0,0,.35);"></span>`,
+    iconSize:[18,18],
+    iconAnchor:[9,9],
+    popupAnchor:[0,-10]
+  });
+}
+
+function renderPlaceList(day){
+  const list = document.getElementById('placeList');
+  if(!list) return;
+  list.innerHTML = placesFor(day).map((p, i) => `
+    <div class="place-row">
+      <div><b>${p.name}</b><span>Day${p.day + 1} · ${p.type} · ${p.note}</span></div>
+      <button data-place="${i}">定位</button>
+    </div>
+  `).join('');
+  list.querySelectorAll('button[data-place]').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      const p = placesFor(activeMapDay)[Number(btn.dataset.place)];
+      if(!p || !tripMap) return;
+      tripMap.setView([p.lat, p.lng], p.name.includes('朱家角') || p.name.includes('機場') ? 12 : 15);
+      placeLayer.eachLayer(layer => {
+        const ll = layer.getLatLng();
+        if(Math.abs(ll.lat - p.lat) < 0.0001 && Math.abs(ll.lng - p.lng) < 0.0001) layer.openPopup();
+      });
+    });
+  });
+}
+
+function renderMarkers(day){
+  if(!placeLayer) return;
+  placeLayer.clearLayers();
+  const bounds = [];
+  placesFor(day).forEach(p=>{
+    bounds.push([p.lat, p.lng]);
+    L.marker([p.lat, p.lng], {icon: markerIcon(p.type)})
+      .bindPopup(`<b>${p.name}</b><br>Day${p.day + 1} · ${p.type}<br>${p.note}<br><a href="${mapUrl(p.name + ' 上海')}" target="_blank" rel="noopener">開外部導航</a>`)
+      .addTo(placeLayer);
+  });
+  if(bounds.length) tripMap.fitBounds(bounds, {padding:[28,28], maxZoom:14});
+  renderPlaceList(day);
+}
+
+function updateOfflineStatus(){
+  const el = document.getElementById('offlineStatus');
+  if(!el) return;
+  const ready = !!navigator.serviceWorker?.controller;
+  const offline = !navigator.onLine;
+  el.classList.toggle('on', ready || offline);
+  el.textContent = offline ? '目前離線：可看已快取地圖' : ready ? '離線模式已準備好' : '正在準備離線模式';
+}
+
+function initTripMap(){
+  if(!window.L || tripMap) {
+    setTimeout(()=> tripMap?.invalidateSize(), 50);
+    return;
+  }
+  tripMap = L.map('tripMap', {zoomControl:true}).setView([31.2304, 121.4737], 11);
+  L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    maxZoom:19,
+    errorTileUrl:'offline-tile.svg',
+    attribution:'&copy; OpenStreetMap contributors'
+  }).addTo(tripMap);
+  placeLayer = L.layerGroup().addTo(tripMap);
+  renderMarkers(activeMapDay);
+  document.querySelectorAll('#mapFilters button').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      activeMapDay = btn.dataset.day;
+      document.querySelectorAll('#mapFilters button').forEach(b=>b.classList.toggle('active', b === btn));
+      renderMarkers(activeMapDay);
+    });
+  });
+  updateOfflineStatus();
+  setTimeout(()=>tripMap.invalidateSize(), 50);
+}
+
 // bottom nav
 document.querySelectorAll('nav button').forEach(btn=>{
   btn.addEventListener('click', ()=>{
@@ -698,6 +871,7 @@ document.querySelectorAll('nav button').forEach(btn=>{
     btn.classList.add('active');
     document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
     document.getElementById(btn.dataset.page).classList.add('active');
+    if(btn.dataset.page === 'page-map') initTripMap();
     window.scrollTo(0,0);
   });
 });
@@ -761,6 +935,18 @@ days.forEach((d,i)=>{
   spendRows.appendChild(row);
 });
 renderSpendTotal();
+
+window.addEventListener('online', updateOfflineStatus);
+window.addEventListener('offline', updateOfflineStatus);
+if('serviceWorker' in navigator){
+  window.addEventListener('load', ()=>{
+    navigator.serviceWorker.register('sw.js').then(reg=>{
+      updateOfflineStatus();
+      if(reg.waiting) reg.waiting.postMessage({type:'SKIP_WAITING'});
+    }).catch(()=> updateOfflineStatus());
+  });
+  navigator.serviceWorker.addEventListener('controllerchange', updateOfflineStatus);
+}
 </script>
 
 </body>
