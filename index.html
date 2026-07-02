@@ -300,6 +300,16 @@
     border-radius:20px;padding:8px 12px;font-size:12px;font-weight:700;white-space:nowrap;
   }
   .map-toolbar button.active{background:var(--accent);border-color:var(--accent);color:var(--on-accent);}
+  .map-actions{display:flex;gap:8px;}
+  .map-actions button{
+    flex:1;border:1px solid var(--border);background:var(--card);color:var(--accent);
+    border-radius:10px;padding:9px;font-size:13px;font-weight:700;cursor:pointer;
+  }
+  .leaflet-popup-content button{
+    border:0;background:var(--accent);color:var(--on-accent);border-radius:8px;
+    padding:5px 10px;font-size:12px;font-weight:700;cursor:pointer;margin-right:6px;
+  }
+  .leaflet-popup-content a{color:var(--accent2);font-weight:700;}
   .offline-pill{
     display:inline-flex;align-items:center;gap:6px;width:max-content;
     background:var(--card2);color:var(--text-dim);border:1px solid var(--border);
@@ -356,12 +366,17 @@
         <button data-day="4">Day5</button>
         <button data-day="5">Day6</button>
       </div>
+      <div class="map-actions">
+        <button id="btnLocate">📍 我的位置</button>
+        <button id="btnRecenter">🎯 重新置中</button>
+      </div>
       <div id="tripMap" aria-label="上海離線地圖"></div>
       <div class="info-card">
         <h3>離線地圖說明</h3>
         <p>景點清單、標記、行程 App 會離線保存。底圖會在你在線看過後快取，離線時可查看已快取過的區域。</p>
         <p>出發前先打開這頁，把上海市區、朱家角、機場附近縮放滑過一次，旅行時比較穩。</p>
       </div>
+      <div class="daytabs" id="placeDayTabs"></div>
       <div class="place-list" id="placeList"></div>
     </div>
   </div>
@@ -739,28 +754,83 @@ days.forEach((d,i)=>{
   b.onclick = ()=>renderDay(i);
   daytabs.appendChild(b);
 });
-renderDay(0);
+function todayDayIndex(){
+  const start = new Date(2026, 10, 19);           // Day1 = 2026-11-19
+  const now = new Date();
+  const d0 = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const diff = Math.round((d0 - start) / 86400000);
+  return Math.max(0, Math.min(days.length - 1, diff));
+}
+renderDay(todayDayIndex());
 
 // ---- offline Leaflet map ----
 let tripMap;
 let placeLayer;
+let routeLayer;
+let meMarker;
 let activeMapDay = 'all';
 
 function placesFor(day){
   return day === 'all' ? mapPlaces : mapPlaces.filter(p => p.day === Number(day));
 }
 
+function buildPlaceDayTabs(){
+  const el = document.getElementById('placeDayTabs');
+  if(!el || el.dataset.built) return;
+  el.dataset.built = '1';
+  el.innerHTML = '<button data-day="all">全部</button>' +
+    days.map((d,i)=> `<button data-day="${i}">${d.label.replace(' ', '&nbsp;')}</button>`).join('');
+  el.querySelectorAll('button').forEach(btn=> btn.addEventListener('click', ()=> setMapDay(btn.dataset.day)));
+}
+
+function setMapDay(day){
+  activeMapDay = day;
+  document.querySelectorAll('#mapFilters button, #placeDayTabs button')
+    .forEach(b=> b.classList.toggle('active', b.dataset.day === day));
+  renderMarkers(day);
+}
+
+const TYPE_COLORS = {住宿:'#3b82c4', 餐飲:'#e07a3c', 交通:'#16a34a', 景點:'#c026d3'};
+const isHotel = p => p.name.includes('米可飯店');
+
 function markerIcon(type){
-  const colors = {住宿:'#3b82c4', 餐飲:'#e07a3c', 交通:'#16a34a', 景點:'#c026d3'};
-  const color = colors[type] || '#e07a3c';
+  const color = TYPE_COLORS[type] || '#e07a3c';
   return L.divIcon({
     className:'trip-pin',
     html:`<span style="display:block;width:18px;height:18px;border-radius:50%;background:${color};border:3px solid #fff;box-shadow:0 1px 6px rgba(0,0,0,.35);"></span>`,
-    iconSize:[18,18],
-    iconAnchor:[9,9],
-    popupAnchor:[0,-10]
+    iconSize:[18,18], iconAnchor:[9,9], popupAnchor:[0,-10]
   });
 }
+function numIcon(n, type){
+  const color = TYPE_COLORS[type] || '#e07a3c';
+  return L.divIcon({
+    className:'trip-pin',
+    html:`<span style="display:flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:50%;background:${color};border:2px solid #fff;box-shadow:0 1px 6px rgba(0,0,0,.4);color:#fff;font-size:13px;font-weight:700;">${n}</span>`,
+    iconSize:[26,26], iconAnchor:[13,13], popupAnchor:[0,-13]
+  });
+}
+function homeIcon(){
+  return L.divIcon({
+    className:'trip-pin',
+    html:`<span style="display:flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:8px;background:#3b82c4;border:2px solid #fff;box-shadow:0 1px 6px rgba(0,0,0,.4);font-size:15px;">🏨</span>`,
+    iconSize:[28,28], iconAnchor:[14,14], popupAnchor:[0,-14]
+  });
+}
+function meIcon(){
+  return L.divIcon({
+    className:'me-pin',
+    html:`<span style="display:block;width:16px;height:16px;border-radius:50%;background:#2563eb;border:3px solid #fff;box-shadow:0 0 0 5px rgba(37,99,235,.3);"></span>`,
+    iconSize:[16,16], iconAnchor:[8,8]
+  });
+}
+
+// 從地圖彈窗跳回該日行程
+window.gotoDay = function(d){
+  renderDay(d);
+  document.querySelectorAll('nav button').forEach(b=> b.classList.toggle('active', b.dataset.page==='page-days'));
+  document.querySelectorAll('.page').forEach(p=> p.classList.toggle('active', p.id==='page-days'));
+  window.scrollTo(0,0);
+};
 
 function renderPlaceList(day){
   const list = document.getElementById('placeList');
@@ -775,7 +845,9 @@ function renderPlaceList(day){
     btn.addEventListener('click', ()=>{
       const p = placesFor(activeMapDay)[Number(btn.dataset.place)];
       if(!p || !tripMap) return;
+      document.getElementById('tripMap').scrollIntoView({behavior:'smooth', block:'start'});
       tripMap.setView([p.lat, p.lng], p.name.includes('朱家角') || p.name.includes('機場') ? 12 : 15);
+      setTimeout(()=> tripMap.invalidateSize(), 300);
       placeLayer.eachLayer(layer => {
         const ll = layer.getLatLng();
         if(Math.abs(ll.lat - p.lat) < 0.0001 && Math.abs(ll.lng - p.lng) < 0.0001) layer.openPopup();
@@ -787,15 +859,56 @@ function renderPlaceList(day){
 function renderMarkers(day){
   if(!placeLayer) return;
   placeLayer.clearLayers();
+  if(routeLayer){ routeLayer.remove(); routeLayer = null; }
+  const list = placesFor(day);
+  const single = day !== 'all';
   const bounds = [];
-  placesFor(day).forEach(p=>{
+
+  list.forEach((p, i)=>{
     bounds.push([p.lat, p.lng]);
-    L.marker([p.lat, p.lng], {icon: markerIcon(p.type)})
-      .bindPopup(`<b>${p.name}</b><br>Day${p.day + 1} · ${p.type}<br>${p.note}<br><a href="${mapUrl(p.name + ' 上海')}" target="_blank" rel="noopener">開外部導航</a>`)
+    const icon = isHotel(p) ? homeIcon() : (single ? numIcon(i+1, p.type) : markerIcon(p.type));
+    const numPrefix = (single && !isHotel(p)) ? `${i+1}. ` : '';
+    L.marker([p.lat, p.lng], {icon})
+      .bindPopup(`<b>${numPrefix}${p.name}</b><br>Day${p.day + 1} · ${p.type}<br>${p.note}<br><button onclick="gotoDay(${p.day})">看行程</button><a href="${mapUrl(p.name + ' 上海')}" target="_blank" rel="noopener">外部導航</a>`)
       .addTo(placeLayer);
   });
-  if(bounds.length) tripMap.fitBounds(bounds, {padding:[28,28], maxZoom:14});
+
+  // 單日:按順序畫動線
+  if(single && list.length >= 2){
+    routeLayer = L.polyline(list.map(p=>[p.lat, p.lng]), {color:'#e07a3c', weight:3, opacity:.7, dashArray:'6,7'}).addTo(tripMap);
+  }
+
+  // 飯店 home 永遠顯示(當前篩選沒含時補上,不算進 bounds 免縮太遠)
+  const hotel = mapPlaces.find(isHotel);
+  if(hotel && !list.some(isHotel)){
+    L.marker([hotel.lat, hotel.lng], {icon: homeIcon()})
+      .bindPopup(`<b>🏨 ${hotel.name}</b><br>${hotel.note}<br><a href="${mapUrl(hotel.name + ' 上海')}" target="_blank" rel="noopener">外部導航</a>`)
+      .addTo(placeLayer);
+  }
+
+  if(bounds.length) tripMap.fitBounds(bounds, {padding:[30,30], maxZoom:14});
   renderPlaceList(day);
+}
+
+function locateMe(){
+  if(!navigator.geolocation){ alert('此裝置不支援定位'); return; }
+  const btn = document.getElementById('btnLocate');
+  if(btn) btn.textContent = '定位中…';
+  navigator.geolocation.getCurrentPosition(pos=>{
+    const { latitude, longitude } = pos.coords;
+    if(meMarker) meMarker.remove();
+    meMarker = L.marker([latitude, longitude], {icon: meIcon()}).addTo(tripMap).bindPopup('📍 你在這裡').openPopup();
+    tripMap.setView([latitude, longitude], 15);
+    if(btn) btn.textContent = '📍 我的位置';
+  }, err=>{
+    alert('定位失敗:' + err.message);
+    if(btn) btn.textContent = '📍 我的位置';
+  }, {enableHighAccuracy:true, timeout:10000});
+}
+
+function recenterMap(){
+  const b = placesFor(activeMapDay).map(p=>[p.lat, p.lng]);
+  if(b.length && tripMap) tripMap.fitBounds(b, {padding:[30,30], maxZoom:14});
 }
 
 function updateOfflineStatus(){
@@ -819,14 +932,14 @@ function initTripMap(){
     attribution:'&copy; OpenStreetMap contributors'
   }).addTo(tripMap);
   placeLayer = L.layerGroup().addTo(tripMap);
-  renderMarkers(activeMapDay);
+  buildPlaceDayTabs();
+  // 預設跟著今天日期(行前=Day1、行後=Day6)
+  setMapDay(String(todayDayIndex()));
   document.querySelectorAll('#mapFilters button').forEach(btn=>{
-    btn.addEventListener('click', ()=>{
-      activeMapDay = btn.dataset.day;
-      document.querySelectorAll('#mapFilters button').forEach(b=>b.classList.toggle('active', b === btn));
-      renderMarkers(activeMapDay);
-    });
+    btn.addEventListener('click', ()=> setMapDay(btn.dataset.day));
   });
+  document.getElementById('btnLocate')?.addEventListener('click', locateMe);
+  document.getElementById('btnRecenter')?.addEventListener('click', recenterMap);
   updateOfflineStatus();
   setTimeout(()=>tripMap.invalidateSize(), 50);
 }
