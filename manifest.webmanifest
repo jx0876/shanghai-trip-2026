@@ -1,0 +1,19 @@
+{
+  "name": "上海行程 2026",
+  "short_name": "上海行程",
+  "description": "上海旅行行程、預算、清單與離線地圖",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#faf6ef",
+  "theme_color": "#e07a3c",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "app-icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

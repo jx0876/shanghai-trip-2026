@@ -3,7 +3,10 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="theme-color" content="#e07a3c">
 <title>上海行程 2026.11.19-24</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="stylesheet" href="vendor/leaflet/leaflet.css">
 <style>
   @font-face{
     font-family:"Noto Sans TC";font-style:normal;font-weight:400;font-display:swap;
@@ -54,41 +57,35 @@
     font-family:"Noto Sans TC",-apple-system,BlinkMacSystemFont,"PingFang TC","Helvetica Neue",Arial,sans-serif;
     background:var(--bg);
     color:var(--text);
-    padding-bottom:76px;
+    padding-bottom:calc(96px + env(safe-area-inset-bottom));
     transition:background .25s,color .25s;
   }
   header{
-    padding:28px 20px 20px;
-    background:var(--header-bg);
+    padding:24px 20px 20px;
     position:relative;
     overflow:hidden;
+    min-height:210px;
+    display:flex;flex-direction:column;justify-content:flex-end;
+    background:linear-gradient(180deg,rgba(8,12,22,.15) 0%,rgba(8,12,22,.35) 45%,rgba(8,12,22,.82) 100%),
+               url("img/hero.jpg") center 42%/cover no-repeat;
     border-bottom:1px solid var(--border);
   }
   .theme-btn{
-    position:absolute;top:20px;right:18px;z-index:2;
+    position:absolute;top:18px;right:18px;z-index:2;
     width:38px;height:38px;border-radius:50%;
-    border:1px solid var(--border);background:var(--card);
-    color:var(--accent);font-size:18px;cursor:pointer;
-    display:flex;align-items:center;justify-content:center;
+    border:1px solid rgba(255,255,255,.35);background:rgba(0,0,0,.35);
+    color:#fff;font-size:18px;cursor:pointer;
+    display:flex;align-items:center;justify-content:center;backdrop-filter:blur(2px);
   }
   .countdown{
-    display:inline-block;margin-top:10px;
-    background:var(--accent);color:var(--on-accent);
-    font-size:12px;font-weight:700;padding:4px 12px;border-radius:20px;
+    display:inline-block;margin-top:10px;width:max-content;
+    background:var(--accent);color:#fff;
+    font-size:12px;font-weight:700;padding:5px 13px;border-radius:20px;
+    box-shadow:0 2px 8px rgba(0,0,0,.3);
   }
-  header::after{
-    content:"";
-    position:absolute; right:-30px; top:-30px;
-    width:160px;height:160px;border-radius:50%;
-    background:radial-gradient(circle,rgba(59,130,196,0.18),transparent 70%);
-  }
-  header h1{margin:0 0 2px;font-family:var(--font-serif);font-size:25px;font-weight:700;letter-spacing:.5px;color:var(--text);}
-  header .kicker{font-size:10px;color:var(--accent);font-weight:700;letter-spacing:3px;margin:0 0 6px;text-transform:uppercase;}
-  header p{margin:0;color:var(--text-dim);font-size:13px;}
-  .skyline{
-    display:flex;align-items:flex-end;gap:3px;margin-top:14px;height:36px;opacity:.9;
-  }
-  .skyline div{flex:1;background:linear-gradient(180deg,var(--accent),var(--accent2));border-radius:2px 2px 0 0;}
+  header h1{margin:0 0 2px;font-family:var(--font-serif);font-size:26px;font-weight:700;letter-spacing:.5px;color:#fff;text-shadow:0 2px 10px rgba(0,0,0,.55);}
+  header .kicker{font-size:10px;color:#ffd9b8;font-weight:700;letter-spacing:3px;margin:0 0 6px;text-transform:uppercase;text-shadow:0 1px 6px rgba(0,0,0,.5);}
+  header p{margin:0;color:rgba(255,255,255,.9);font-size:13px;text-shadow:0 1px 6px rgba(0,0,0,.5);}
 
   main{padding:16px 16px 8px;max-width:520px;margin:0 auto;}
   .page{display:none;}
@@ -107,7 +104,18 @@
     background:var(--card);border:1px solid var(--border);border-radius:14px;
     padding:14px 14px;margin-bottom:10px;cursor:pointer;
   }
-  .item .time{font-size:11px;color:var(--accent);font-weight:700;letter-spacing:1px;text-transform:uppercase;}
+  .item .time{font-size:12px;color:var(--accent);font-weight:700;letter-spacing:.5px;}
+  .item .time .clk{font-size:15px;margin-right:4px;}
+  .chips{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 8px;}
+  .chip{
+    font-size:11px;color:var(--text-dim);background:var(--card2);
+    padding:4px 9px;border-radius:8px;line-height:1.3;
+  }
+  .transit{
+    display:flex;align-items:center;gap:6px;margin:0 0 8px;
+    font-size:12px;color:var(--accent2);font-weight:700;
+    background:var(--card2);padding:6px 10px;border-radius:8px;
+  }
   .item .name{font-family:var(--font-serif);font-size:16px;font-weight:700;margin:4px 0 4px;display:flex;align-items:center;gap:8px;}
   .item .name .txt{flex:1;}
   .item .chevron{font-size:12px;color:var(--text-dim);transition:transform .2s;}
@@ -184,16 +192,16 @@
   nav{
     position:fixed;bottom:0;left:0;right:0;
     display:flex;background:var(--card);border-top:1px solid var(--border);
-    padding:6px 2px calc(6px + env(safe-area-inset-bottom));
-    z-index:10;
+    padding:12px 2px calc(20px + env(safe-area-inset-bottom));
+    z-index:1000;
     box-shadow:0 -2px 12px rgba(59,130,196,0.08);
   }
   nav button{
     flex:1;background:none;border:none;color:var(--text-dim);
-    display:flex;flex-direction:column;align-items:center;gap:3px;
+    display:flex;flex-direction:column;align-items:center;gap:4px;
     font-size:10px;padding:6px 1px;
   }
-  nav button .ic{font-size:19px;}
+  nav button .ic{font-size:21px;}
   nav button.active{color:var(--accent);}
 
   /* 匯率換算機 */
@@ -217,6 +225,39 @@
   }
   .spend-row .rmb{font-size:12px;color:var(--text-dim);flex:0 0 auto;}
   .spend-total{display:flex;justify-content:space-between;margin-top:12px;font-size:15px;font-weight:700;color:var(--accent);}
+
+  /* 花費紀錄 / 分帳 */
+  .exp-line{display:flex;gap:6px;margin-bottom:6px;}
+  .exp-line input,.exp-line select{
+    flex:1;min-width:0;border:1px solid var(--border);border-radius:8px;
+    padding:9px;font-size:14px;background:var(--card2);color:var(--text);
+  }
+  #expDate{flex:0 0 140px;}
+  #expPayer{flex:0 0 96px;}
+  .exp-share{display:flex;flex-wrap:wrap;gap:6px;margin:2px 0 10px;}
+  .exp-share .plabel{font-size:12px;color:var(--text-dim);flex:0 0 100%;font-weight:700;}
+  .share-pill{
+    border:1px solid var(--border);background:var(--card2);color:var(--text-dim);
+    border-radius:20px;padding:6px 13px;font-size:13px;font-weight:700;cursor:pointer;
+  }
+  .share-pill.on{background:var(--accent);border-color:var(--accent);color:var(--on-accent);}
+  #expAdd{
+    width:100%;border:0;background:var(--accent);color:var(--on-accent);
+    border-radius:10px;padding:11px;font-size:14px;font-weight:700;cursor:pointer;
+  }
+  .exp-list{margin-top:14px;display:flex;flex-direction:column;}
+  .exp-item{display:flex;align-items:center;gap:8px;padding:10px 2px;border-bottom:1px solid var(--border);}
+  .exp-item:last-child{border-bottom:none;}
+  .exp-item .ei{flex:1;min-width:0;}
+  .exp-item .ei b{font-size:14px;font-weight:700;}
+  .exp-item .ei span{display:block;font-size:11px;color:var(--text-dim);margin-top:2px;}
+  .exp-item .amt{font-size:14px;font-weight:700;flex:0 0 auto;}
+  .exp-item .act{border:0;background:none;color:var(--text-dim);font-size:15px;cursor:pointer;padding:2px 5px;flex:0 0 auto;}
+  .settle{margin-top:14px;padding-top:12px;border-top:1px dashed var(--border);}
+  .settle .srow{display:flex;justify-content:space-between;font-size:13px;padding:5px 0;}
+  .settle .pos{color:#1d9e75;font-weight:700;}
+  .settle .neg{color:#d85a30;font-weight:700;}
+  .settle .zero{color:var(--text-dim);}
 
   /* 實用:電話卡 */
   .tel{
@@ -244,6 +285,44 @@
     display:block;text-align:center;background:var(--accent);color:var(--on-accent);
     font-weight:700;font-size:14px;padding:12px;border-radius:12px;text-decoration:none;margin-bottom:12px;
   }
+  .map-shell{
+    display:grid;gap:12px;
+  }
+  #tripMap{
+    width:100%;height:min(62vh,520px);min-height:360px;
+    border:1px solid var(--border);border-radius:14px;overflow:hidden;background:var(--card2);
+  }
+  .leaflet-container{font-family:inherit;background:var(--card2);}
+  .leaflet-popup-content{font-family:inherit;font-size:13px;line-height:1.45;}
+  .map-toolbar{display:flex;gap:8px;overflow-x:auto;padding-bottom:2px;}
+  .map-toolbar button{
+    flex:0 0 auto;border:1px solid var(--border);background:var(--card);color:var(--text-dim);
+    border-radius:20px;padding:8px 12px;font-size:12px;font-weight:700;white-space:nowrap;
+  }
+  .map-toolbar button.active{background:var(--accent);border-color:var(--accent);color:var(--on-accent);}
+  .offline-pill{
+    display:inline-flex;align-items:center;gap:6px;width:max-content;
+    background:var(--card2);color:var(--text-dim);border:1px solid var(--border);
+    border-radius:999px;padding:6px 10px;font-size:12px;font-weight:700;
+  }
+  .offline-pill.on{background:var(--accent);border-color:var(--accent);color:var(--on-accent);}
+  .place-list{display:grid;gap:8px;}
+  .place-row{
+    display:flex;align-items:center;gap:10px;background:var(--card);border:1px solid var(--border);
+    border-radius:12px;padding:10px 12px;
+  }
+  .place-row b{font-size:14px;}
+  .place-row span{display:block;font-size:12px;color:var(--text-dim);margin-top:2px;}
+  .place-row button{
+    margin-left:auto;border:0;background:var(--accent);color:var(--on-accent);
+    border-radius:10px;padding:7px 10px;font-size:12px;font-weight:700;
+  }
+  @media (max-width:430px){
+    main{padding-left:12px;padding-right:12px;}
+    #tripMap{height:54vh;min-height:330px;}
+    nav button{font-size:9px;}
+    nav button .ic{font-size:19px;}
+  }
 </style>
 </head>
 <body>
@@ -252,70 +331,38 @@
   <button class="theme-btn" id="themeBtn" title="切換深色/淺色">🌙</button>
   <div class="kicker">Shanghai · 2026</div>
   <h1>上海行程 🧧</h1>
-  <p>2026.11.19（四）— 11.24（二）｜6天5夜｜4人</p>
+  <p>2026.11.19（四）— 11.24（二）｜6天5夜｜5人</p>
   <div class="countdown" id="countdown">計算中…</div>
-  <div class="skyline">
-    <div style="height:40%"></div><div style="height:70%"></div><div style="height:55%"></div>
-    <div style="height:90%"></div><div style="height:60%"></div><div style="height:75%"></div>
-    <div style="height:45%"></div><div style="height:85%"></div><div style="height:50%"></div>
-    <div style="height:65%"></div><div style="height:95%"></div><div style="height:40%"></div>
-  </div>
 </header>
 
 <main>
 
   <!-- 每日行程 -->
   <div class="page active" id="page-days">
-    <a class="bigmap" href="https://www.google.com/maps/search/?api=1&query=%E4%B8%8A%E6%B5%B7%E6%99%AF%E9%BB%9E" target="_blank">🗺️ 開地圖看全部景點</a>
     <div class="daytabs" id="daytabs"></div>
     <div id="daycontent"></div>
   </div>
 
-  <!-- 交通 -->
-  <div class="page" id="page-transport">
-    <div class="info-card">
-      <h3>✈️ 乘客 / 緊急聯絡</h3>
-      <p style="font-size:12px;">點欄位直接填,自動存在這支手機</p>
-      <div class="prow"><span>乘客 1</span><input data-field="pax1" placeholder="姓名(同台胞證)"></div>
-      <div class="prow"><span>乘客 2</span><input data-field="pax2" placeholder="姓名(同台胞證)"></div>
-      <div class="prow"><span>乘客 3</span><input data-field="pax3" placeholder="姓名(同台胞證)"></div>
-      <div class="prow"><span>乘客 4</span><input data-field="pax4" placeholder="姓名(同台胞證)"></div>
-      <div class="prow"><span>緊急聯絡人</span><input data-field="emName" placeholder="姓名/關係"></div>
-      <div class="prow"><span>緊急電話</span><input data-field="emPhone" placeholder="+886..." inputmode="tel"></div>
-    </div>
-    <div class="info-card">
-      <h3>🚇 交通總覽</h3>
-      <p>全程以地鐵為主，飯店在靜安區長壽路（7號線/13號線），去外灘/南京路約20-30分鐘，去武康路/朱家角需轉乘。</p>
-      <ul>
-        <li>地鐵單趟約 RMB 3-9</li>
-        <li>建議用「Metro大都會」App 或支付寶掃碼過閘，不用另買交通卡</li>
-        <li>朱家角古鎮：地鐵+公車約1.5小時，屬近郊一日遊</li>
-        <li>機場↔市區：地鐵或機場巴士，約1小時，RMB 8-50</li>
-      </ul>
-    </div>
-    <div class="info-card">
-      <h3>📶 網路 / App</h3>
-      <ul>
-        <li>大陸鎖 Google/Line/FB/Instagram，<b>出發前先在台灣裝好 VPN 並測試</b>，落地後才裝會抓不到</li>
-        <li>備用地圖：高德地圖（Google Maps 在陸內可能不穩）</li>
-        <li>支付寶或微信支付先綁台灣信用卡，現金找零不便</li>
-      </ul>
-    </div>
-  </div>
-
-  <!-- 住宿 -->
-  <div class="page" id="page-hotel">
-    <div class="info-card">
-      <h3>🏨 米可飯店公寓（長壽路地鐵站店）</h3>
-      <p>上海市靜安區安遠路588號</p>
-      <p>最近地鐵：7號線/13號線 長壽路站，步行約8分鐘</p>
-      <p>入住 11/19 → 退房 11/24（5晚）</p>
-      <p>房型：開放式廚房，含洗衣機/冰箱/微波爐/陽台，部分房型榻榻米</p>
-      <p>不含早餐（行程已排街邊早餐）</p>
-      <p>評分 9.5／102間房，約台幣五六百/晚，入住需押金人民幣200</p>
-      <div class="row" style="margin-top:10px;">
-        <a class="maplink" href="https://www.trip.com/w/CZPxiZVQ2V2" target="_blank">開啟 Trip.com 訂房頁 →</a>
+  <!-- 離線地圖 -->
+  <div class="page" id="page-map">
+    <div class="map-shell">
+      <div class="offline-pill" id="offlineStatus">準備離線地圖</div>
+      <div class="map-toolbar" id="mapFilters">
+        <button class="active" data-day="all">全部</button>
+        <button data-day="0">Day1</button>
+        <button data-day="1">Day2</button>
+        <button data-day="2">Day3</button>
+        <button data-day="3">Day4</button>
+        <button data-day="4">Day5</button>
+        <button data-day="5">Day6</button>
       </div>
+      <div id="tripMap" aria-label="上海離線地圖"></div>
+      <div class="info-card">
+        <h3>離線地圖說明</h3>
+        <p>景點清單、標記、行程 App 會離線保存。底圖會在你在線看過後快取，離線時可查看已快取過的區域。</p>
+        <p>出發前先打開這頁，把上海市區、朱家角、機場附近縮放滑過一次，旅行時比較穩。</p>
+      </div>
+      <div class="place-list" id="placeList"></div>
     </div>
   </div>
 
@@ -361,19 +408,21 @@
   <!-- 預算 -->
   <div class="page" id="page-budget">
     <div class="info-card">
-      <h3>💰 每日預估花費（4人，人民幣，粗估）</h3>
-      <table>
-        <thead><tr><th>Day</th><th>餐飲</th><th>交通</th><th>門票/體驗</th><th>小計</th></tr></thead>
-        <tbody>
-          <tr><td>1</td><td>300</td><td>200</td><td>—</td><td>~500</td></tr>
-          <tr><td>2</td><td>600</td><td>100</td><td>渡輪 200-400</td><td>~1000-1100</td></tr>
-          <tr><td>3</td><td>500</td><td>150</td><td>古鎮門票/船票 300</td><td>~950</td></tr>
-          <tr><td>4</td><td>600</td><td>100</td><td>—</td><td>~700</td></tr>
-          <tr><td>5</td><td>600</td><td>100</td><td>LV遊輪 800-1500、星巴克200</td><td>~1700-2400</td></tr>
-          <tr><td>6</td><td>200</td><td>100</td><td>—</td><td>~300</td></tr>
-        </tbody>
-      </table>
-      <p style="margin-top:10px;">不含飯店（五六百台幣/晚 x5晚 + 押金RMB200）、機票（已訂）、購物彈性支出。</p>
+      <h3>🧾 花費紀錄 / 分帳（RMB）</h3>
+      <div class="exp-line">
+        <input id="expDate" type="date">
+        <input id="expName" placeholder="品名(如:小籠包)">
+      </div>
+      <div class="exp-line">
+        <input id="expAmt" type="number" inputmode="decimal" placeholder="金額 ¥">
+        <select id="expPayer" aria-label="付款人"></select>
+      </div>
+      <div class="exp-share" id="expShare"></div>
+      <button id="expAdd">+ 新增</button>
+      <div id="expList" class="exp-list"></div>
+      <div class="spend-total"><span>合計已花</span><span id="spendTotal">¥0</span></div>
+      <div id="settle" class="settle"></div>
+      <p class="fx-note">選付款人＋分給誰(可複選)，自動算誰該收誰該付。存這支手機。</p>
     </div>
     <div class="info-card">
       <h3>💱 匯率換算機</h3>
@@ -390,12 +439,6 @@
         <span class="fx-note" style="margin:0;">RMB 1 : TWD ?（可改）</span>
       </div>
       <p class="fx-note">任一格輸入即時換算，離線可用。出發前查即時匯率改上面數字。</p>
-    </div>
-    <div class="info-card">
-      <h3>🧾 實際花費紀錄（RMB）</h3>
-      <div id="spendRows"></div>
-      <div class="spend-total"><span>合計已花</span><span id="spendTotal">¥0</span></div>
-      <p class="fx-note">每天實花手動填，自動加總＋換算台幣，存這支手機。</p>
     </div>
   </div>
 
@@ -434,20 +477,19 @@
       <div class="alt"><div class="info"><b>1933 老場坊</b><span>老屠宰場改文創，建築迷宮好拍</span></div><a href="https://www.google.com/maps/search/?api=1&query=%E4%B8%8A%E6%B5%B7%201933%E8%80%81%E5%A0%B4%E5%9D%8A" target="_blank">📍</a></div>
       <div class="alt"><div class="info"><b>多倫路文化名人街</b><span>老上海街景，安靜好走</span></div><a href="https://www.google.com/maps/search/?api=1&query=%E4%B8%8A%E6%B5%B7%20%E5%A4%9A%E5%80%AB%E8%B7%AF" target="_blank">📍</a></div>
     </div>
-    <a class="bigmap" href="https://www.google.com/maps/search/?api=1&query=%E4%B8%8A%E6%B5%B7%E6%99%AF%E9%BB%9E" target="_blank">🗺️ 開地圖看全部景點</a>
   </div>
 
 </main>
 
 <nav>
   <button class="active" data-page="page-days"><span class="ic">📅</span>每日行程</button>
-  <button data-page="page-transport"><span class="ic">🚇</span>交通</button>
-  <button data-page="page-hotel"><span class="ic">🏨</span>住宿</button>
+  <button data-page="page-map"><span class="ic">🗺️</span>地圖</button>
   <button data-page="page-packing"><span class="ic">🧳</span>行李</button>
   <button data-page="page-budget"><span class="ic">💰</span>預算</button>
   <button data-page="page-tools"><span class="ic">🧰</span>實用</button>
 </nav>
 
+<script src="vendor/leaflet/leaflet.js"></script>
 <script>
 const mapUrl = q => q.startsWith('http') ? q : "https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(q);
 
@@ -455,75 +497,92 @@ const days = [
   {
     label: "Day1 11/19", title: "抵達上海",
     items: [
-      {time:"下午", name:"台北→上海抵達，入住米可飯店公寓（長壽路）", note:"機場→長壽路：地鐵/機場巴士約1hr，RMB 8-50。落地先開VPN、換錢、辦支付寶", map:null,
-        detail:"浦東機場出關後可搭地鐵2號線轉乘至長壽路，或直接打車較省事（行李多建議打車，約RMB150-200）。落地第一件事先確認手機能上網、VPN連得上，再處理支付寶/現金。"},
-      {time:"晚上", name:"飯店附近覓食、休息", note:"長途飛行後不排硬行程", map:null,
+      {time:"下午", name:"台北→上海抵達，入住米可飯店公寓（長壽路）", clock:"14:00", transit:"浦東機場→地鐵2號線 或打車 約1hr", note:"機場→長壽路：地鐵/機場巴士約1hr，RMB 8-50。落地先開VPN、換錢、辦支付寶", map:null,
+        detail:"浦東機場出關後可搭地鐵2號線轉乘至長壽路，或直接打車較省事（行李多建議打車，約RMB150-200）。落地第一件事先確認手機能上網、VPN連得上，再處理支付寶/現金。<br><br><b>🏨 住宿：米可飯店公寓（長壽路地鐵站店）</b><br>地址：上海市靜安區安遠路588號<br>最近地鐵：7號線/13號線 長壽路站，步行約8分鐘<br>入住 11/19 → 退房 11/24（5晚）<br>房型：開放式廚房，含洗衣機/冰箱/微波爐/陽台，部分房型榻榻米<br>不含早餐（行程已排街邊早餐）<br>評分 9.5／102間房，約台幣五六百/晚，入住需押金人民幣200<br><a href='https://www.trip.com/w/CZPxiZVQ2V2' target='_blank' rel='noopener'>開啟 Trip.com 訂房頁 →</a>"},
+      {time:"晚上", name:"飯店附近覓食、休息", clock:"19:00", note:"長途飛行後不排硬行程", map:null,
         detail:"長壽路一帶生活機能不錯，超市、小吃店都有，第一晚不用特別安排遠程行程，先熟悉飯店周邊、調時差即可。"},
     ]
   },
   {
     label: "Day2 11/20", title: "外灘・南京路",
     items: [
-      {time:"早餐", name:"萊萊小籠包 / 小楊生煎", note:"皮薄餡多鮮肉小籠，或生煎+鴨血粉絲湯", img:"img/xiaolongbao.jpg", map:"https://www.google.com/maps/search/?api=1&query=%E4%B8%8A%E6%B5%B7%20%E5%B0%8F%E6%A5%8A%E7%94%9F%E7%85%8E",
+      {time:"早餐", name:"萊萊小籠包 / 小楊生煎", clock:"08:00", hours:"06:30–20:00", price:"人均¥20-40", addr:"南京路/人民廣場一帶", note:"皮薄餡多鮮肉小籠，或生煎+鴨血粉絲湯", img:"img/xiaolongbao.jpg", map:"https://www.google.com/maps/search/?api=1&query=%E4%B8%8A%E6%B5%B7%20%E5%B0%8F%E6%A5%8A%E7%94%9F%E7%85%8E",
         detail:"<b>簡介</b>：上海在地早餐經典，萊萊小籠主打皮薄餡多鮮肉小籠，小楊生煎則底部金黃酥脆、咬開爆湯，配咖喱牛肉湯或鴨血粉絲湯是標配。<br><b>地址/交通</b>：市區多家分店，南京路、人民廣場一帶都有，地圖搜最近分店。<br><b>營業/價位</b>：約06:30–20:00（各店不一），人均約¥20-40。<br><b>Tips</b>：現包現煎最好吃；小心爆湯燙口，先咬小口吸湯；可搭油豆腐細粉。"},
-      {time:"上午", name:"南京路步行街", note:"1.5公里商業街，可搭觀光小火車", img:"img/nanjing_road.jpg", map:"https://www.google.com/maps/search/?api=1&query=%E4%B8%8A%E6%B5%B7%20%E5%8D%97%E4%BA%AC%E8%B7%AF%E6%AD%A5%E8%A1%8C%E8%A1%97",
+      {time:"上午", name:"南京路步行街", clock:"09:30", hours:"店家10:00–22:00", addr:"黃浦區南京東路", transit:"地鐵2/10號線 南京東路站", note:"1.5公里商業街，可搭觀光小火車", img:"img/nanjing_road.jpg", map:"https://www.google.com/maps/search/?api=1&query=%E4%B8%8A%E6%B5%B7%20%E5%8D%97%E4%BA%AC%E8%B7%AF%E6%AD%A5%E8%A1%8C%E8%A1%97",
         detail:"<b>簡介</b>：上海最有名的商業步行街，東起外灘、西接人民廣場，1.5公里全是百貨、老字號、餐廳與霓虹招牌，夜晚特別熱鬧。<br><b>地址/交通</b>：黃浦區南京東路，地鐵2/10號線「南京東路站」或1/2/8號線「人民廣場站」。<br><b>營業</b>：街道全天，店家約10:00–22:00。<br><b>Tips</b>：從外灘走過來順遊最順；觀光小火車約¥5代步；沿途第一食品、新雅等老字號可買伴手禮。"},
-      {time:"下午", name:"外灘・東方明珠塔・萬國建築群", note:"三件套，日落夜景最佳時段", img:"img/the_bund.jpg", map:"https://www.google.com/maps/search/?api=1&query=%E4%B8%8A%E6%B5%B7%20%E5%A4%96%E7%81%98%20%E6%9D%B1%E6%96%B9%E6%98%8E%E7%8F%A0",
+      {time:"下午", name:"外灘・東方明珠塔・萬國建築群", clock:"14:00", hours:"東方明珠08:30–21:30", price:"聯票¥120-160", addr:"中山東一路/陸家嘴", transit:"外灘步行 或地鐵2號線 陸家嘴站", note:"三件套，日落夜景最佳時段", img:"img/the_bund.jpg", map:"https://www.google.com/maps/search/?api=1&query=%E4%B8%8A%E6%B5%B7%20%E5%A4%96%E7%81%98%20%E6%9D%B1%E6%96%B9%E6%98%8E%E7%8F%A0",
         detail:"<b>簡介</b>：外灘是上海地標，黃浦江西岸萬國建築群對望東岸陸家嘴東方明珠與摩天樓群，東方明珠可登塔，含259m觀光層與透明懸空觀光廊。<br><b>地址/交通</b>：黃浦區中山東一路（外灘）；東方明珠在浦東陸家嘴，地鐵2號線「陸家嘴站」。<br><b>營業/門票</b>：外灘全天開放；東方明珠約08:30–21:30，三球聯票約¥160、二球約¥120。<br><b>Tips</b>：黃昏前到白天夜景一次拍；東方明珠週末排隊長建議線上先買票；人多留意隨身物。"},
-      {time:"傍晚", name:"黃浦江渡輪", note:"平價版夜景船遊", img:"img/ferry.jpg", map:"https://www.google.com/maps/search/?api=1&query=%E4%B8%8A%E6%B5%B7%20%E9%BB%83%E6%B5%A6%E6%B1%9F%E8%BC%AA%E6%B8%A1",
+      {time:"傍晚", name:"黃浦江渡輪", clock:"17:30", hours:"07:00–22:00", price:"¥2", addr:"金陵東路渡口", transit:"外灘步行至渡口", note:"平價版夜景船遊", img:"img/ferry.jpg", map:"https://www.google.com/maps/search/?api=1&query=%E4%B8%8A%E6%B5%B7%20%E9%BB%83%E6%B5%A6%E6%B1%9F%E8%BC%AA%E6%B8%A1",
         detail:"<b>簡介</b>：連接外灘（浦西）與陸家嘴（浦東）的市民輪渡，當地人通勤用，票價便宜，是水路看兩岸天際線最划算的方式，比觀光遊船省很多。<br><b>地址/交通</b>：外灘金陵東路渡口等多個渡口，地圖搜「輪渡站」。<br><b>營業/票價</b>：約07:00–22:00，班次密集，票價約¥2。<br><b>Tips</b>：比觀光遊船便宜十幾倍、景一樣；上層甲板視野好；避開上下班尖峰較舒適。"},
-      {time:"晚餐", name:"太二酸菜魚", note:"川味酸菜魚", img:"img/suancaiyu.jpg", map:"https://www.google.com/maps/search/?api=1&query=%E5%A4%AA%E4%BA%8C%E9%85%B8%E8%8F%9C%E9%AD%9A%20%E4%B8%8A%E6%B5%B7%20%E5%A4%96%E7%81%98",
+      {time:"晚餐", name:"太二酸菜魚", clock:"19:00", hours:"11:00–21:30", price:"人均¥80-100", addr:"外灘周邊", note:"川味酸菜魚，常需候位", img:"img/suancaiyu.jpg", map:"https://www.google.com/maps/search/?api=1&query=%E5%A4%AA%E4%BA%8C%E9%85%B8%E8%8F%9C%E9%AD%9A%20%E4%B8%8A%E6%B5%B7%20%E5%A4%96%E7%81%98",
         detail:"<b>簡介</b>：全國連鎖酸菜魚名店，主打老壇子酸菜搭鱸魚片，湯酸辣開胃，只賣鱸魚酸菜魚一種魚、規定每桌限四人。<br><b>地址/交通</b>：南京路/外灘周邊多家分店，地圖搜最近點。<br><b>營業/價位</b>：約11:00–21:30，人均約¥80-100，常需候位。<br><b>Tips</b>：份量大建議適量點；建議避開用餐尖峰或先線上取號。"},
     ]
   },
   {
     label: "Day3 11/21", title: "朱家角古鎮一日遊",
     items: [
-      {time:"早餐", name:"煎餅果子", note:"街邊經典早餐", img:"img/jianbing.jpg", map:"https://www.google.com/maps/search/?api=1&query=%E4%B8%8A%E6%B5%B7%20%E7%85%8E%E9%A4%85%E6%9E%9C%E5%AD%90",
+      {time:"早餐", name:"煎餅果子", clock:"07:30", hours:"早上–中午賣完收", price:"¥8-15", note:"街邊經典早餐", img:"img/jianbing.jpg", map:"https://www.google.com/maps/search/?api=1&query=%E4%B8%8A%E6%B5%B7%20%E7%85%8E%E9%A4%85%E6%9E%9C%E5%AD%90",
         detail:"<b>簡介</b>：中式早餐代表，薄麵糊鐵板攤成餅，打蛋、刷醬、加脆餅與蔥香菜，捲起即食。<br><b>地址/交通</b>：古鎮/街邊早餐攤皆有，可問當地人哪攤排隊多。<br><b>營業/價位</b>：通常早上到中午，賣完收攤，一份約¥8-15。<br><b>Tips</b>：要加薄脆才有靈魂；現做現吃最酥；可選加火腿/里脊。"},
-      {time:"全天", name:"朱家角古鎮", note:"地鐵+公車約1.5hr。江南水鄉，放生橋、搖櫓船、扎肉、阿婆粽", img:"img/zhujiajiao.jpg", map:"https://www.google.com/maps/search/?api=1&query=%E4%B8%8A%E6%B5%B7%20%E6%9C%B1%E5%AE%B6%E8%A7%92%E5%8F%A4%E9%8E%AE",
+      {time:"全天", name:"朱家角古鎮", clock:"09:00", hours:"古鎮全天/景點約08:30–16:30", price:"聯票¥30-80、搖櫓¥150/船", addr:"青浦區朱家角", transit:"地鐵17號線 朱家角站+接駁 約1-1.5hr", note:"江南水鄉，放生橋、搖櫓船、扎肉、阿婆粽", img:"img/zhujiajiao.jpg", map:"https://www.google.com/maps/search/?api=1&query=%E4%B8%8A%E6%B5%B7%20%E6%9C%B1%E5%AE%B6%E8%A7%92%E5%8F%A4%E9%8E%AE",
         detail:"<b>簡介</b>：上海近郊保存最好的江南水鄉古鎮，明清石橋、河道、老街與搖櫓船，放生橋是地標。<br><b>地址/交通</b>：青浦區朱家角，市區搭地鐵17號線「朱家角站」再轉接駁或客運，車程約1-1.5小時。<br><b>營業/門票</b>：古鎮免費進，部分景點（課植園等）聯票約¥30-80，搖櫓船約¥150/船。<br><b>Tips</b>：搭一趟搖櫓船看水鄉；嘗扎肉、阿婆粽、熏豆茶；避開週末人潮，早點出發。"},
-      {time:"晚餐", name:"滬西老弄堂", note:"本幫菜，紅燒濃油赤醬，接地氣", map:"https://www.google.com/maps/search/?api=1&query=%E6%BB%AC%E8%A5%BF%E8%80%81%E5%BC%84%E5%A0%82%20%E4%B8%8A%E6%B5%B7",
+      {time:"晚餐", name:"滬西老弄堂", clock:"18:30", hours:"11:00–21:00", price:"人均¥60-90", note:"本幫菜，紅燒濃油赤醬，接地氣", map:"https://www.google.com/maps/search/?api=1&query=%E6%BB%AC%E8%A5%BF%E8%80%81%E5%BC%84%E5%A0%82%20%E4%B8%8A%E6%B5%B7",
         detail:"<b>簡介</b>：主打上海弄堂家常味的本幫菜館，懷舊弄堂裝潢，紅燒、濃油赤醬路線，氣氛接地氣。<br><b>地址/交通</b>：市區分店，地圖搜最近點。<br><b>營業/價位</b>：約11:00–21:00，人均約¥60-90。<br><b>Tips</b>：點本幫招牌紅燒肉、油爆蝦；懷舊裝潢適合拍照；熱門時段建議訂位。"},
     ]
   },
   {
     label: "Day4 11/22", title: "武康路・梧桐區",
     items: [
-      {time:"早餐", name:"小楊生煎", note:"底脆皮鬆，配咖喱牛肉湯", img:"img/shengjian.jpg", map:"https://www.google.com/maps/search/?api=1&query=%E4%B8%8A%E6%B5%B7%20%E5%B0%8F%E6%A5%8A%E7%94%9F%E7%85%8E",
+      {time:"早餐", name:"小楊生煎", clock:"08:00", hours:"07:00–21:00", price:"人均¥20-35", addr:"吳江路等分店", note:"底脆皮鬆，配咖喱牛肉湯", img:"img/shengjian.jpg", map:"https://www.google.com/maps/search/?api=1&query=%E4%B8%8A%E6%B5%B7%20%E5%B0%8F%E6%A5%8A%E7%94%9F%E7%85%8E",
         detail:"<b>簡介</b>：上海生煎名店，底脆、皮鬆、湯多，經典鮮肉生煎也有蝦仁口味，搭咖喱牛肉湯/鴨血粉絲湯最對味。<br><b>地址/交通</b>：市區多家分店（吳江路等），地圖搜最近點。<br><b>營業/價位</b>：約07:00–21:00，人均約¥20-35。<br><b>Tips</b>：先咬小口吸湯免燙；蝦仁生煎可一試；現煎那爐最酥。"},
-      {time:"上午", name:"武康大樓", note:"IG打卡熱點，1924年Art Deco建築", img:"img/wukang_bldg.jpg", map:"https://www.google.com/maps/search/?api=1&query=%E4%B8%8A%E6%B5%B7%20%E6%AD%A6%E5%BA%B7%E5%A4%A7%E6%A8%93",
+      {time:"上午", name:"武康大樓", clock:"09:30", hours:"外觀全天", addr:"武康路/淮海中路口", transit:"地鐵10/11號線 交通大學站", note:"IG打卡熱點，1924年Art Deco建築", img:"img/wukang_bldg.jpg", map:"https://www.google.com/maps/search/?api=1&query=%E4%B8%8A%E6%B5%B7%20%E6%AD%A6%E5%BA%B7%E5%A4%A7%E6%A8%93",
         detail:"<b>簡介</b>：上海最上鏡的歷史建築，1924年船型Art Deco公寓樓，位於六岔路口，梧桐區氛圍滿分，是IG打卡熱點。<br><b>地址/交通</b>：徐匯區武康路/淮海中路口，地鐵10/11號線「交通大學站」或「上海圖書館站」步行。<br><b>營業</b>：外觀全天可看（不可入內），免費，周邊店家約10:00–22:00。<br><b>Tips</b>：經典機位在對街路口斜拍船頭；梧桐季（秋）最美；順遊武康路、安福路小店與咖啡。"},
-      {time:"下午", name:"豫園", note:"明代園林+城隍廟商城，小吃集中", img:"img/yuyuan.jpg", map:"https://www.google.com/maps/search/?api=1&query=%E4%B8%8A%E6%B5%B7%20%E8%B1%AB%E5%9C%92",
+      {time:"下午", name:"豫園", clock:"13:30", hours:"園林09:00–16:30", price:"門票¥30-40", addr:"黃浦區安仁街", transit:"地鐵14號線 豫園站", note:"明代園林+城隍廟商城，小吃集中", img:"img/yuyuan.jpg", map:"https://www.google.com/maps/search/?api=1&query=%E4%B8%8A%E6%B5%B7%20%E8%B1%AB%E5%9C%92",
         detail:"<b>簡介</b>：明代古典園林（始建1559），亭台樓閣、假山池水，旁邊是豫園商城與城隍廟，老上海風情濃。<br><b>地址/交通</b>：黃浦區安仁街，地鐵14號線「豫園站」或10號線「豫園站」。<br><b>營業/門票</b>：園林約09:00–16:30（售票至16:00），門票約¥30-40，商城/廟全天。<br><b>Tips</b>：園林與商城是兩回事，園林要票；南翔饅頭店排隊吃小籠；傍晚商城亮燈好拍。"},
-      {time:"晚餐", name:"裕興記（蟹粉麵）", note:"蘇式麵，蟹粉/三蝦麵，價位偏高", map:"https://www.google.com/maps/search/?api=1&query=%E8%A3%95%E8%88%88%E8%A8%98%20%E4%B8%8A%E6%B5%B7",
+      {time:"晚餐", name:"裕興記（蟹粉麵）", clock:"18:30", hours:"10:30–20:30", price:"蟹粉/三蝦麵¥80-160", note:"蘇式麵，蟹粉/三蝦麵，價位偏高", map:"https://www.google.com/maps/search/?api=1&query=%E8%A3%95%E8%88%88%E8%A8%98%20%E4%B8%8A%E6%B5%B7",
         detail:"<b>簡介</b>：蘇式麵名店，招牌三蝦麵、蟹粉麵，秋季大閘蟹蟹粉拌麵極鮮，湯頭講究、現拆蟹粉，價位偏高但用料實。<br><b>地址/交通</b>：市區分店，地圖搜最近點。<br><b>營業/價位</b>：約10:30–20:30，蟹粉/三蝦麵約¥80-160。<br><b>Tips</b>：秋天吃蟹粉/三蝦最當季；現拆蟹粉鮮味足；熱門需候位，建議避尖峰。"},
     ]
   },
   {
     label: "Day5 11/23", title: "南京路續逛・星巴克・收尾",
     items: [
-      {time:"上午", name:"南京路步行街（沒逛完的部分）", note:"購物/補拍照", map:"https://www.google.com/maps/search/?api=1&query=%E4%B8%8A%E6%B5%B7%20%E5%8D%97%E4%BA%AC%E8%B7%AF%E6%AD%A5%E8%A1%8C%E8%A1%97",
+      {time:"上午", name:"南京路步行街（沒逛完的部分）", clock:"10:00", addr:"黃浦區南京東路", transit:"地鐵2/10號線 南京東路站", note:"購物/補拍照，上午人潮少", map:"https://www.google.com/maps/search/?api=1&query=%E4%B8%8A%E6%B5%B7%20%E5%8D%97%E4%BA%AC%E8%B7%AF%E6%AD%A5%E8%A1%8C%E8%A1%97",
         detail:"把Day2沒逛完的店家、伴手禮採買補齊，上午人潮相對少，適合安排血拼跟拍照，細節同Day2南京路步行街介紹。"},
-      {time:"下午", name:"LV遊輪", note:"較精緻版黃浦江遊船", map:"https://www.google.com/maps/search/?api=1&query=%E4%B8%8A%E6%B5%B7%20LV%20%E8%B7%AF%E6%98%93%E5%A8%81%E7%99%BB%20%E5%A4%96%E7%81%98",
+      {time:"下午", name:"LV遊輪", clock:"14:00", hours:"店家10:00–22:00/外觀全天", addr:"中山東一路外灘", note:"外灘LV船型旗艦店，建築櫥窗打卡", map:"https://www.google.com/maps/search/?api=1&query=%E4%B8%8A%E6%B5%B7%20LV%20%E8%B7%AF%E6%98%93%E5%A8%81%E7%99%BB%20%E5%A4%96%E7%81%98",
         detail:"<b>簡介</b>：指外灘的路易威登旗艦概念店（船型/遊輪造型外觀，常被稱「LV大船」），外灘地標性精品店，建築與櫥窗本身就是打卡點。<br><b>地址/交通</b>：黃浦區中山東一路外灘沿線，地鐵2/10號線「南京東路站」步行。<br><b>營業</b>：店家約10:00–22:00，外觀全天可拍。<br><b>Tips</b>：夜間外觀亮燈好拍；在外灘段可順遊南京路；入店參觀注意精品店禮儀。"},
-      {time:"下午", name:"星巴克烘焙工坊", note:"全球最大星巴克門市", img:"img/starbucks.jpg", map:"https://www.google.com/maps/search/?api=1&query=%E4%B8%8A%E6%B5%B7%20%E6%98%9F%E5%B7%B4%E5%85%8B%E7%83%98%E7%84%99%E5%B7%A5%E5%9D%8A%20%E5%8D%97%E4%BA%AC%E8%B7%AF",
+      {time:"下午", name:"星巴克烘焙工坊", clock:"15:30", hours:"07:00–23:00", price:"飲品¥40起", addr:"南京西路789號 興業太古匯", transit:"地鐵2/12/13號線 南京西路站", note:"全球最大星巴克之一，現場烘豆", img:"img/starbucks.jpg", map:"https://www.google.com/maps/search/?api=1&query=%E4%B8%8A%E6%B5%B7%20%E6%98%9F%E5%B7%B4%E5%85%8B%E7%83%98%E7%84%99%E5%B7%A5%E5%9D%8A%20%E5%8D%97%E4%BA%AC%E8%B7%AF",
         detail:"<b>簡介</b>：星巴克臻選上海烘焙工坊，全球最大星巴克之一（2700㎡），現場烘豆、特調與茶飲(Teavana)、義式餐點，銅製管路工業風場景，體驗型旗艦店。<br><b>地址/交通</b>：靜安區南京西路789號興業太古匯，地鐵2/12/13號線「南京西路站」。<br><b>營業/價位</b>：約07:00–23:00，飲品¥40起。<br><b>Tips</b>：看現場烘豆與輸豆銅管；限定杯/豆可當伴手禮；人多，平日上午較好逛。"},
-      {time:"晚餐", name:"海底撈", note:"服務體驗知名，適合收尾聚餐", img:"img/haidilao.jpg", map:"https://www.google.com/maps/search/?api=1&query=%E6%B5%B7%E5%BA%95%E6%92%88%20%E4%B8%8A%E6%B5%B7%20%E5%8D%97%E4%BA%AC%E8%B7%AF",
+      {time:"晚餐", name:"海底撈", clock:"18:30", hours:"10:00–次日凌晨", price:"人均¥120-180", addr:"南京路/市區分店", note:"服務體驗知名，適合收尾聚餐", img:"img/haidilao.jpg", map:"https://www.google.com/maps/search/?api=1&query=%E6%B5%B7%E5%BA%95%E6%92%88%20%E4%B8%8A%E6%B5%B7%20%E5%8D%97%E4%BA%AC%E8%B7%AF",
         detail:"<b>簡介</b>：知名連鎖火鍋，以服務著稱（等位有美甲/小吃、生日慶祝、變臉表演視門店），鍋底湯頭多選、撈麵表演，適合多人聚餐。<br><b>地址/交通</b>：南京路/市區多家分店，地圖搜最近點。<br><b>營業/價位</b>：多為10:00–次日凌晨，人均約¥120-180。<br><b>Tips</b>：尖峰排隊久可線上取號；等位區有免費小吃/服務；可點撈麵表演與小料自助。"},
-      {time:"晚上", name:"按摩", note:"隔天返程前放鬆", map:"https://www.google.com/maps/search/?api=1&query=%E4%B8%8A%E6%B5%B7%20%E6%8C%89%E6%91%A9%20%E5%8D%97%E4%BA%AC%E8%B7%AF",
+      {time:"晚上", name:"按摩", clock:"21:00", hours:"多營業至深夜", price:"足療¥80-200/節", note:"隔天返程前放鬆", map:"https://www.google.com/maps/search/?api=1&query=%E4%B8%8A%E6%B5%B7%20%E6%8C%89%E6%91%A9%20%E5%8D%97%E4%BA%AC%E8%B7%AF",
         detail:"<b>簡介</b>：行程收尾放鬆，上海腳底/全身按摩、足浴店多，連鎖（如富僑、良子）與在地店皆有。<br><b>地址/交通</b>：南京路/市區商圈多家，地圖搜「足道/按摩」就近選評價高的。<br><b>營業/價位</b>：多營業至深夜（約11:00–次日02:00），足療約¥80-200/節。<br><b>Tips</b>：挑連鎖或高評價較有保障；先確認價目與時長再開始；可指定力道輕重。"},
     ]
   },
   {
     label: "Day6 11/24", title: "返程",
     items: [
-      {time:"上午", name:"飯店退房，簡單早餐", note:"", map:null,
+      {time:"上午", name:"飯店退房，簡單早餐", clock:"09:00", note:"確認押金退還，重要物品放隨身", map:null,
         detail:"退房前確認押金退還狀況，行李打包預留隨身重要物品（證件、機票確認函）方便過安檢時拿取。"},
-      {time:"中午前", name:"前往機場，上海→台北", note:"地鐵/機場巴士", map:null,
+      {time:"中午前", name:"前往機場，上海→台北", clock:"11:00", transit:"地鐵/機場巴士，預留2.5-3hr", note:"提早出發，尖峰較擠", map:null,
         detail:"預留至少2.5-3小時給機場流程（報到、安檢、登機），尖峰時段地鐵/機場巴士也可能較擁擠，建議提早出發。"},
     ]
   },
+];
+
+const mapPlaces = [
+  {day:0, name:"浦東國際機場", type:"交通", lat:31.1443, lng:121.8083, note:"抵達/返程機場"},
+  {day:0, name:"米可飯店公寓（長壽路）", type:"住宿", lat:31.2393, lng:121.4369, note:"上海市靜安區安遠路588號"},
+  {day:1, name:"南京路步行街", type:"景點", lat:31.2359, lng:121.4747, note:"Day2 / Day5 購物散步"},
+  {day:1, name:"外灘", type:"景點", lat:31.2401, lng:121.4908, note:"萬國建築群與夜景"},
+  {day:1, name:"東方明珠塔", type:"景點", lat:31.2397, lng:121.4998, note:"陸家嘴地標"},
+  {day:1, name:"金陵東路渡口", type:"交通", lat:31.2306, lng:121.4944, note:"黃浦江渡輪"},
+  {day:1, name:"太二酸菜魚（外灘周邊）", type:"餐飲", lat:31.2368, lng:121.4846, note:"晚餐候位抓時間"},
+  {day:2, name:"朱家角古鎮", type:"景點", lat:31.1078, lng:121.0566, note:"水鄉古鎮一日遊"},
+  {day:3, name:"武康大樓", type:"景點", lat:31.2057, lng:121.4386, note:"武康路打卡點"},
+  {day:3, name:"豫園", type:"景點", lat:31.2272, lng:121.4920, note:"園林與城隍廟商城"},
+  {day:4, name:"LV 大船 / 外灘", type:"景點", lat:31.2392, lng:121.4898, note:"外灘船型旗艦店"},
+  {day:4, name:"星巴克烘焙工坊", type:"餐飲", lat:31.2298, lng:121.4597, note:"南京西路789號"},
+  {day:4, name:"海底撈（南京路周邊）", type:"餐飲", lat:31.2355, lng:121.4758, note:"收尾聚餐"},
+  {day:5, name:"返程機場方向", type:"交通", lat:31.1443, lng:121.8083, note:"預留 2.5-3 小時"}
 ];
 
 const daytabs = document.getElementById('daytabs');
@@ -555,9 +614,14 @@ function renderDay(idx){
     orderOf(idx).map(ii => {
       const it = d.items[ii];
       const vis = store.visited[idx + '-' + ii];
+      const chips = [
+        it.hours ? `<span class="chip">⏰ ${it.hours}</span>` : '',
+        it.price ? `<span class="chip">💰 ${it.price}</span>` : '',
+        it.addr ? `<span class="chip">📍 ${it.addr}</span>` : '',
+      ].join('');
       return `
-      <div class="item${vis ? ' visited' : ''}" data-ii="${ii}">
-        <div class="time">${it.time}</div>
+      <div class="item${vis ? ' visited' : ''}${it.detail ? ' expanded' : ''}" data-ii="${ii}">
+        <div class="time">${it.clock ? `<span class="clk">${it.clock}</span>` : ''}${it.time}</div>
         <div class="name">
           <button class="check" title="標記去過">✓</button>
           <span class="txt">${it.name}</span>
@@ -565,7 +629,9 @@ function renderDay(idx){
           <span class="handle">⠿</span>
         </div>
         ${it.img ? `<img class="photo" src="${it.img}" loading="lazy" alt="${it.name}">` : ''}
+        ${it.transit ? `<div class="transit">🚉 ${it.transit}</div>` : ''}
         ${it.note ? `<div class="note">${it.note}</div>` : ''}
+        ${chips ? `<div class="chips">${chips}</div>` : ''}
         <div class="row">
           ${it.map ? `<a class="maplink" href="${mapUrl(it.map)}" target="_blank" onclick="event.stopPropagation()">📍 導航</a>` : ''}
         </div>
@@ -675,6 +741,96 @@ days.forEach((d,i)=>{
 });
 renderDay(0);
 
+// ---- offline Leaflet map ----
+let tripMap;
+let placeLayer;
+let activeMapDay = 'all';
+
+function placesFor(day){
+  return day === 'all' ? mapPlaces : mapPlaces.filter(p => p.day === Number(day));
+}
+
+function markerIcon(type){
+  const colors = {住宿:'#3b82c4', 餐飲:'#e07a3c', 交通:'#16a34a', 景點:'#c026d3'};
+  const color = colors[type] || '#e07a3c';
+  return L.divIcon({
+    className:'trip-pin',
+    html:`<span style="display:block;width:18px;height:18px;border-radius:50%;background:${color};border:3px solid #fff;box-shadow:0 1px 6px rgba(0,0,0,.35);"></span>`,
+    iconSize:[18,18],
+    iconAnchor:[9,9],
+    popupAnchor:[0,-10]
+  });
+}
+
+function renderPlaceList(day){
+  const list = document.getElementById('placeList');
+  if(!list) return;
+  list.innerHTML = placesFor(day).map((p, i) => `
+    <div class="place-row">
+      <div><b>${p.name}</b><span>Day${p.day + 1} · ${p.type} · ${p.note}</span></div>
+      <button data-place="${i}">定位</button>
+    </div>
+  `).join('');
+  list.querySelectorAll('button[data-place]').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      const p = placesFor(activeMapDay)[Number(btn.dataset.place)];
+      if(!p || !tripMap) return;
+      tripMap.setView([p.lat, p.lng], p.name.includes('朱家角') || p.name.includes('機場') ? 12 : 15);
+      placeLayer.eachLayer(layer => {
+        const ll = layer.getLatLng();
+        if(Math.abs(ll.lat - p.lat) < 0.0001 && Math.abs(ll.lng - p.lng) < 0.0001) layer.openPopup();
+      });
+    });
+  });
+}
+
+function renderMarkers(day){
+  if(!placeLayer) return;
+  placeLayer.clearLayers();
+  const bounds = [];
+  placesFor(day).forEach(p=>{
+    bounds.push([p.lat, p.lng]);
+    L.marker([p.lat, p.lng], {icon: markerIcon(p.type)})
+      .bindPopup(`<b>${p.name}</b><br>Day${p.day + 1} · ${p.type}<br>${p.note}<br><a href="${mapUrl(p.name + ' 上海')}" target="_blank" rel="noopener">開外部導航</a>`)
+      .addTo(placeLayer);
+  });
+  if(bounds.length) tripMap.fitBounds(bounds, {padding:[28,28], maxZoom:14});
+  renderPlaceList(day);
+}
+
+function updateOfflineStatus(){
+  const el = document.getElementById('offlineStatus');
+  if(!el) return;
+  const ready = !!navigator.serviceWorker?.controller;
+  const offline = !navigator.onLine;
+  el.classList.toggle('on', ready || offline);
+  el.textContent = offline ? '目前離線：可看已快取地圖' : ready ? '離線模式已準備好' : '正在準備離線模式';
+}
+
+function initTripMap(){
+  if(!window.L || tripMap) {
+    setTimeout(()=> tripMap?.invalidateSize(), 50);
+    return;
+  }
+  tripMap = L.map('tripMap', {zoomControl:true}).setView([31.2304, 121.4737], 11);
+  L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    maxZoom:19,
+    errorTileUrl:'offline-tile.svg',
+    attribution:'&copy; OpenStreetMap contributors'
+  }).addTo(tripMap);
+  placeLayer = L.layerGroup().addTo(tripMap);
+  renderMarkers(activeMapDay);
+  document.querySelectorAll('#mapFilters button').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      activeMapDay = btn.dataset.day;
+      document.querySelectorAll('#mapFilters button').forEach(b=>b.classList.toggle('active', b === btn));
+      renderMarkers(activeMapDay);
+    });
+  });
+  updateOfflineStatus();
+  setTimeout(()=>tripMap.invalidateSize(), 50);
+}
+
 // bottom nav
 document.querySelectorAll('nav button').forEach(btn=>{
   btn.addEventListener('click', ()=>{
@@ -682,6 +838,7 @@ document.querySelectorAll('nav button').forEach(btn=>{
     btn.classList.add('active');
     document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
     document.getElementById(btn.dataset.page).classList.add('active');
+    if(btn.dataset.page === 'page-map') initTripMap();
     window.scrollTo(0,0);
   });
 });
@@ -722,29 +879,115 @@ function fromRmb(){ const v = parseFloat(fxRmb.value); fxTwd.value = isNaN(v) ? 
 function fromTwd(){ const v = parseFloat(fxTwd.value); const r = rate(); fxRmb.value = (isNaN(v) || !r) ? '' : Math.round(v / r * 100) / 100; }
 fxRmb.addEventListener('input', fromRmb);
 fxTwd.addEventListener('input', fromTwd);
-fxRate.addEventListener('input', ()=>{ store.fields.fxRate = fxRate.value; save(); fromRmb(); });
+fxRate.addEventListener('input', ()=>{ store.fields.fxRate = fxRate.value; save(); fromRmb(); if(typeof renderExpenses==='function') renderExpenses(); });
 fromRmb();
 
-// ---- 實際花費紀錄 ----
-store.spend = store.spend || {};
-const spendRows = document.getElementById('spendRows');
+// ---- 花費紀錄 / 分帳 ----
+const MEMBERS = ['童','賴','劉','游','盈'];
+store.expenses = store.expenses || [];
+let editId = null;
+
+const expDate = document.getElementById('expDate');
+const expName = document.getElementById('expName');
+const expAmt = document.getElementById('expAmt');
+const expPayer = document.getElementById('expPayer');
+const expShare = document.getElementById('expShare');
+const expAdd = document.getElementById('expAdd');
+const expList = document.getElementById('expList');
+const settle = document.getElementById('settle');
 const spendTotal = document.getElementById('spendTotal');
-function renderSpendTotal(){
-  const sum = days.reduce((a,_,i)=> a + (parseFloat(store.spend[i]) || 0), 0);
-  spendTotal.textContent = `¥${Math.round(sum)}　≈ TWD ${Math.round(sum * rate()).toLocaleString()}`;
+
+expPayer.innerHTML = MEMBERS.map(m=>`<option value="${m}">${m}</option>`).join('');
+expShare.innerHTML = '<span class="plabel">分給誰（可複選）</span>' +
+  MEMBERS.map(m=>`<button type="button" class="share-pill${m==='童'?' on':''}" data-m="${m}">${m}</button>`).join('');
+expShare.querySelectorAll('.share-pill').forEach(b=> b.addEventListener('click', ()=> b.classList.toggle('on')));
+
+const todayStr = ()=>{ const d=new Date(); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; };
+const fmtDate = s=>{ const p=(s||'').split('-'); return p.length===3 ? `${+p[1]}/${+p[2]}` : s; };
+
+function resetForm(){
+  expDate.value = todayStr();
+  expName.value = ''; expAmt.value = ''; expPayer.value = MEMBERS[0];
+  expShare.querySelectorAll('.share-pill').forEach(b=> b.classList.toggle('on', b.dataset.m==='童'));
+  editId = null; expAdd.textContent = '+ 新增';
 }
-days.forEach((d,i)=>{
-  const row = document.createElement('div');
-  row.className = 'spend-row';
-  row.innerHTML = `<span class="d">${d.label.split(' ')[0].replace('Day','D')}</span><span class="rmb">¥</span>`;
-  const inp = document.createElement('input');
-  inp.type = 'number'; inp.inputMode = 'decimal'; inp.placeholder = '0';
-  inp.value = store.spend[i] || '';
-  inp.addEventListener('input', ()=>{ store.spend[i] = inp.value; save(); renderSpendTotal(); });
-  row.insertBefore(inp, row.querySelector('.rmb'));
-  spendRows.appendChild(row);
+
+function renderSettle(){
+  if(!store.expenses.length){ settle.innerHTML = ''; return; }
+  const paid = {}, owe = {};
+  MEMBERS.forEach(m=>{ paid[m]=0; owe[m]=0; });
+  store.expenses.forEach(e=>{
+    paid[e.payer] = (paid[e.payer]||0) + (+e.amount||0);
+    const share = e.shared.length ? (+e.amount||0)/e.shared.length : 0;
+    e.shared.forEach(m=> owe[m] = (owe[m]||0) + share);
+  });
+  const rows = MEMBERS.map(m=>{
+    const net = Math.round((paid[m]||0) - (owe[m]||0));
+    let cls='zero', txt='打平';
+    if(net>0){ cls='pos'; txt=`應收 ¥${net}`; }
+    else if(net<0){ cls='neg'; txt=`應付 ¥${-net}`; }
+    return `<div class="srow"><span>${m}</span><span class="${cls}">${txt}</span></div>`;
+  }).join('');
+  settle.innerHTML = `<div class="fx-note" style="margin-bottom:6px;">結算（正=別人還你，負=你要付給別人）</div>${rows}`;
+}
+
+function renderExpenses(){
+  const list = [...store.expenses].sort((a,b)=> a.date===b.date ? b.id-a.id : (a.date<b.date?1:-1));
+  expList.innerHTML = list.map(e=>`
+    <div class="exp-item" data-id="${e.id}">
+      <div class="ei"><b>${e.name || '(未命名)'}</b><span>${fmtDate(e.date)} · ${e.payer}付 · 分${e.shared.length}人</span></div>
+      <div class="amt">¥${Math.round(e.amount)}</div>
+      <button class="act" data-act="edit" aria-label="編輯">✎</button>
+      <button class="act" data-act="del" aria-label="刪除">🗑</button>
+    </div>`).join('') || '<p class="fx-note" style="margin:10px 0;">還沒有花費紀錄</p>';
+
+  const sum = store.expenses.reduce((a,e)=> a + (+e.amount||0), 0);
+  spendTotal.textContent = `¥${Math.round(sum)}　≈ TWD ${Math.round(sum * rate()).toLocaleString()}`;
+  renderSettle();
+
+  expList.querySelectorAll('.exp-item').forEach(row=>{
+    row.querySelector('[data-act="del"]').addEventListener('click', ()=>{
+      store.expenses = store.expenses.filter(x=> String(x.id) !== row.dataset.id);
+      save(); if(String(editId) === row.dataset.id) resetForm(); renderExpenses();
+    });
+    row.querySelector('[data-act="edit"]').addEventListener('click', ()=>{
+      const e = store.expenses.find(x=> String(x.id) === row.dataset.id);
+      if(!e) return;
+      expDate.value = e.date; expName.value = e.name; expAmt.value = e.amount; expPayer.value = e.payer;
+      expShare.querySelectorAll('.share-pill').forEach(b=> b.classList.toggle('on', e.shared.includes(b.dataset.m)));
+      editId = e.id; expAdd.textContent = '✓ 更新'; expName.focus();
+    });
+  });
+}
+
+expAdd.addEventListener('click', ()=>{
+  const amount = parseFloat(expAmt.value);
+  const shared = [...expShare.querySelectorAll('.share-pill.on')].map(b=> b.dataset.m);
+  if(!amount || amount <= 0){ expAmt.focus(); return; }
+  if(!shared.length){ alert('至少選一個分帳的人'); return; }
+  if(editId != null){
+    const e = store.expenses.find(x=> x.id === editId);
+    if(e){ e.date=expDate.value||todayStr(); e.name=expName.value.trim(); e.amount=amount; e.payer=expPayer.value; e.shared=shared; }
+  }else{
+    store.expenses.push({ id:Date.now(), date:expDate.value||todayStr(), name:expName.value.trim(), amount, payer:expPayer.value, shared });
+  }
+  save(); resetForm(); renderExpenses();
 });
-renderSpendTotal();
+
+resetForm();
+renderExpenses();
+
+window.addEventListener('online', updateOfflineStatus);
+window.addEventListener('offline', updateOfflineStatus);
+if('serviceWorker' in navigator){
+  window.addEventListener('load', ()=>{
+    navigator.serviceWorker.register('sw.js').then(reg=>{
+      updateOfflineStatus();
+      if(reg.waiting) reg.waiting.postMessage({type:'SKIP_WAITING'});
+    }).catch(()=> updateOfflineStatus());
+  });
+  navigator.serviceWorker.addEventListener('controllerchange', updateOfflineStatus);
+}
 </script>
 
 </body>
